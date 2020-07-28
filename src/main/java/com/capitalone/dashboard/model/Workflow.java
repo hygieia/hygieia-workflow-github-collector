@@ -2,7 +2,16 @@ package com.capitalone.dashboard.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "git_workflow")
+@Document(collection = "github_workflow")
 public class Workflow {
- // Fields follows
+	@Indexed(unique = true)
+	private String workflowId;
+	private String name;
+	private String state;
+	
+	public Workflow(String workflowId, String name, String state) {
+		this.workflowId = workflowId;
+		this.name = name;
+		this.state = state;
+	}
 }
