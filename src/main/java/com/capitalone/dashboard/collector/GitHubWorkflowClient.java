@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.GitHub;
+import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
 import com.capitalone.dashboard.model.WorkflowRunJobStep;
@@ -15,10 +16,12 @@ import com.capitalone.dashboard.model.WorkflowRunJobStep;
  */
 public interface GitHubWorkflowClient {
 
-	List<WorkflowRun> getWorkflowRuns(GitHub repo, boolean firstRun, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<Workflow> getWorkflows(GitHub repo, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
 
-	List<WorkflowRunJob> getWorkflowRunJobs(List<WorkflowRun> runs, boolean firstRun, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<WorkflowRun> getWorkflowRuns(GitHub repo, String workflowId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
 
-	List<WorkflowRunJobStep> getWorkflowRunJobSteps(List<WorkflowRunJob> jobs, boolean firstRun, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String workflowRunId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+
+	List<WorkflowRunJobStep> getWorkflowRunJobSteps(GitHub repo, List<WorkflowRunJob> jobs, boolean firstRun, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
 
 }

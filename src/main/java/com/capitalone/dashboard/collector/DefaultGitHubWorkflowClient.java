@@ -63,20 +63,80 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
         this.settings = settings;
         this.restOperations = restOperationsSupplier.get();
     }
+    
+    /**
+     * Gets workflows for a given repo
+     * @param repo
+     * @return list of workflows
+     * @throws RestClientException
+     * @throws MalformedURLException
+     * @throws HygieiaException
+     */
+	@Override
+	public List<Workflow> getWorkflows(GitHub repo, 
+			List<Pattern> commitExclusionPatterns)
+			throws MalformedURLException, HygieiaException {
+
+        List<Workflow> workflows = new ArrayList<>();
+        int page=1;
+        int perPage=100;
+
+        // format URL
+        String repoUrl = (String) repo.getOptions().get("url");
+        GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
+        String apiUrl = gitHubParsed.getApiUrl();
+        // To Do check changes the url: workflowRuns
+        String queryUrl = apiUrl.concat("/actions/workflows/" +
+        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
+        String decryptedPassword = repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
+        String personalAccessToken = (String) repo.getPersonalAccessToken();
+        String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
+        boolean lastPage = false;
+        String queryUrlPage = queryUrl;
+        while (!lastPage) {
+            LOG.info("Executing " + queryUrlPage);
+            ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
+            JSONObject jsonObject = parseAsObject(response);
+            JSONArray jsonArray = (JSONObject) jsonObject.get("workflows");
+            for (Object item : jsonArray) {
+                JSONObject jsonObject = (JSONObject) item;
+
+            	String workflowId = str(jsonObject, "id");
+                String name = str(jsonObject, "name");
+                String state = str(jsonObject, "state");
+ 
+                Workflow workflow = new Workflow(workflowId,
+                		name,state);
+                workflows.add(workflow);
+  
+                if (CollectionUtils.isEmpty(jsonArray)) {
+                    lastPage = true;
+                } else {
+                    if (isThisLastPage(response)) {
+                        lastPage = true;
+                    } else {
+                        lastPage = false;
+                        queryUrlPage = getNextPageUrl(response);
+                    }
+                }
+           }
+        }
+        return workflows;
+	}
 
     /**
-     * Gets workflowRuns for a given repo
+     * Gets workflowRuns for a given repo & workflowId
      * @param repo
-     * @param firstRun
+     * @param workflowId
      * @return list of workflowRuns
      * @throws RestClientException
      * @throws MalformedURLException
      * @throws HygieiaException
      */
 	@Override
-	public List<WorkflowRun> getWorkflowRuns(GitHub repo, boolean firstRun, List<Pattern> commitExclusionPatterns)
+	public List<WorkflowRun> getWorkflowRuns(GitHub repo, String pWorkflowId, 
+			List<Pattern> commitExclusionPatterns)
 			throws MalformedURLException, HygieiaException {
-		// TODO Auto-generated method stub
 
         List<WorkflowRun> workflowRuns = new ArrayList<>();
         int page=1;
@@ -87,9 +147,9 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
         String apiUrl = gitHubParsed.getApiUrl();
         // To Do check changes the url: workflowRuns
-        String queryUrl = apiUrl.concat("/actions/runs?branch=" + repo.getBranch()
-                + "&page=" + page + "&perPage=" + perPage));
-        String decryptedPassword =      repo.getPassword();// Decryting is not required decryptString(repo.getPassword(), settings.getKey());
+        String queryUrl = apiUrl.concat("/actions/workflows/" + pWorkflowId + "/runs" +
+        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
+        String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
         String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
         boolean lastPage = false;
@@ -122,6 +182,7 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
                     }
                 }
            }
+        }
         return workflowRuns;
 	}
 
