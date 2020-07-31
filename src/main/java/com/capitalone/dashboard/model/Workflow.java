@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.model;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "github_workflow")

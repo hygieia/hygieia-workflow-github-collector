@@ -38,6 +38,8 @@ import com.capitalone.dashboard.model.GitHub;
 import com.capitalone.dashboard.model.GitHubParsed;
 import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
+import com.capitalone.dashboard.model.WorkflowRunJob;
+import com.capitalone.dashboard.model.WorkflowRunJobStep;
 import com.capitalone.dashboard.util.Encryption;
 import com.capitalone.dashboard.util.EncryptionException;
 import com.capitalone.dashboard.util.Supplier;
@@ -96,10 +98,10 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
         while (!lastPage) {
             LOG.info("Executing " + queryUrlPage);
             ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
-            JSONObject jsonObject = parseAsObject(response);
-            JSONArray jsonArray = (JSONObject) jsonObject.get("workflows");
+            JSONObject jsonObject = (JSONObject) parseAsObject(response);
+            JSONArray jsonArray = (JSONArray) jsonObject.get("workflows");
             for (Object item : jsonArray) {
-                JSONObject jsonObject = (JSONObject) item;
+                JSONObject itemObject = (JSONObject) item;
 
             	String workflowId = str(jsonObject, "id");
                 String name = str(jsonObject, "name");
@@ -158,7 +160,7 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
             LOG.info("Executing " + queryUrlPage);
             ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
             JSONObject runObject = parseAsObject(response);
-            JSONArray jsonArray = (JSONObject) runObject.get("workflow_runs");
+            JSONArray jsonArray = (JSONArray) runObject.get("workflow_runs");
             for (Object item : jsonArray) {
                 JSONObject jsonObject = (JSONObject) item;
 
@@ -186,98 +188,6 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
         return workflowRuns;
 	}
 
-    /**
-     * Gets commits for a given repo
-     * @param repo
-     * @param firstRun
-     * @return list of commits
-     * @throws RestClientException
-     * @throws MalformedURLException
-     * @throws HygieiaException
-     */
-    @Override
-    public List<Commit> getCommits(GitHub repo, boolean firstRun, List<Pattern> commitExclusionPatterns) throws RestClientException, MalformedURLException, HygieiaException {
-
-        List<Commit> commits = new ArrayList<>();
-
-        // format URL
-        String repoUrl = (String) repo.getOptions().get("url");
-        GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
-        String apiUrl = gitHubParsed.getApiUrl();
-
-        String queryUrl = apiUrl.concat("/commits?sha=" + repo.getBranch()
-                + "&since=" + getTimeForApi(getRunDate(repo, firstRun)));
-        String decryptedPassword =      repo.getPassword();//decryptString(repo.getPassword(), settings.getKey());
-        String personalAccessToken = (String) repo.getPersonalAccessToken();
-        String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
-        boolean lastPage = false;
-        String queryUrlPage = queryUrl;
-        while (!lastPage) {
-            LOG.info("Executing " + queryUrlPage);
-            ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
-            JSONArray jsonArray = parseAsArray(response);
-            for (Object item : jsonArray) {
-                JSONObject jsonObject = (JSONObject) item;
-                String sha = str(jsonObject, "sha");
-                JSONObject commitObject = (JSONObject) jsonObject.get("commit");
-                JSONObject commitAuthorObject = (JSONObject) commitObject.get("author");
-                String message = str(commitObject, "message");
-                String author = str(commitAuthorObject, "name");
-                long timestamp = new DateTime(str(commitAuthorObject, "date"))
-                        .getMillis();
-                JSONObject authorObject = (JSONObject) jsonObject.get("author");
-                String authorLogin = "";
-                if (authorObject != null) {
-                    authorLogin = str(authorObject, "login");
-                }
-                JSONArray parents = (JSONArray) jsonObject.get("parents");
-                List<String> parentShas = new ArrayList<>();
-                if (parents != null) {
-                    for (Object parentObj : parents) {
-                        parentShas.add(str((JSONObject) parentObj, "sha"));
-                    }
-                }
-
-                Commit commit = new Commit();
-                commit.setTimestamp(System.currentTimeMillis());
-                commit.setScmUrl(repo.getRepoUrl());
-                commit.setScmBranch(repo.getBranch());
-                commit.setScmRevisionNumber(sha);
-                commit.setScmParentRevisionNumbers(parentShas);
-                commit.setScmAuthor(author);
-                commit.setScmAuthorLogin(authorLogin);
-                commit.setScmCommitLog(message);
-                commit.setScmCommitTimestamp(timestamp);
-                commit.setNumberOfChanges(1);
-                commit.setType(getCommitType(CollectionUtils.size(parents), message, commitExclusionPatterns));
-                commits.add(commit);
-            }
-            if (CollectionUtils.isEmpty(jsonArray)) {
-                lastPage = true;
-            } else {
-                if (isThisLastPage(response)) {
-                    lastPage = true;
-                } else {
-                    lastPage = false;
-                    queryUrlPage = getNextPageUrl(response);
-                }
-            }
-        }
-        return commits;
-    }
-
-    private CommitType getCommitType(int parentSize, String commitMessage, List<Pattern> commitExclusionPatterns) {
-        if (parentSize > 1) return CommitType.Merge;
-        if (settings.getNotBuiltCommits() == null) return CommitType.New;
-        if (!CollectionUtils.isEmpty(commitExclusionPatterns)) {
-            for (Pattern pattern : commitExclusionPatterns) {
-                if (pattern.matcher(commitMessage).matches()) {
-                    return CommitType.NotBuilt;
-                }
-            }
-        }
-        return CommitType.New;
-    }
 
 
 
@@ -485,6 +395,20 @@ public class DefaultGitHubWorkflowClient implements GitHubWorkflowClient {
         cal.setTime(dt);
         return String.format("%tFT%<tRZ", cal);
     }
+
+	@Override
+	public List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String workflowRunId, List<Pattern> exclusionPatterns)
+			throws MalformedURLException, HygieiaException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<WorkflowRunJobStep> getWorkflowRunJobSteps(GitHub repo, List<WorkflowRunJob> jobs, boolean firstRun,
+			List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
 
