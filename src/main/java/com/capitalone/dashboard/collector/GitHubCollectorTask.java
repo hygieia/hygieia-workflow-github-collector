@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -35,11 +36,13 @@ import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitHub;
 import com.capitalone.dashboard.model.GitRequest;
+import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.GitHubRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
+import com.capitalone.dashboard.repository.WorkflowRepository;
 
 /**
  * CollectorTask that fetches Commit information from GitHub
@@ -52,30 +55,35 @@ public class GitHubCollectorTask extends CollectorTask<Collector> {
     private final GitHubRepository gitHubRepoRepository;
     private final CommitRepository commitRepository;
     private final GitRequestRepository gitRequestRepository;
-    private final GitHubClient gitHubClient;
+    private final GitHubWorkflowClient gitHubWorkflowClient;
     private final GitHubSettings gitHubSettings;
     private final ComponentRepository dbComponentRepository;
     private static final long FOURTEEN_DAYS_MILLISECONDS = 14 * 24 * 60 * 60 * 1000;
     private static final String API_RATE_LIMIT_MESSAGE = "API rate limit exceeded";
     private List<Pattern> commitExclusionPatterns = new ArrayList<>();
+    private WorkflowRepository<Workflow> workflowRepository;
 
+    Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
+    
     @Autowired
     public GitHubCollectorTask(TaskScheduler taskScheduler,
                                BaseCollectorRepository<Collector> collectorRepository,
                                GitHubRepository gitHubRepoRepository,
                                CommitRepository commitRepository,
                                GitRequestRepository gitRequestRepository,
-                               GitHubClient gitHubClient,
+                               GitHubWorkflowClient gitHubWorkflowClient,
                                GitHubSettings gitHubSettings,
-                               ComponentRepository dbComponentRepository) {
+                               ComponentRepository dbComponentRepository,
+                               WorkflowRepository<Workflow> workflowRepository) {
         super(taskScheduler, "GitHub");
         this.collectorRepository = collectorRepository;
         this.gitHubRepoRepository = gitHubRepoRepository;
         this.commitRepository = commitRepository;
-        this.gitHubClient = gitHubClient;
+        this.gitHubWorkflowClient = gitHubWorkflowClient;
         this.gitHubSettings = gitHubSettings;
         this.dbComponentRepository = dbComponentRepository;
         this.gitRequestRepository = gitRequestRepository;
+        this.workflowRepository = workflowRepository;
         if (!CollectionUtils.isEmpty(gitHubSettings.getNotBuiltCommits())) {
             for (String regExStr : gitHubSettings.getNotBuiltCommits()) {
                 Pattern pattern = Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE);
@@ -194,18 +202,18 @@ public class GitHubCollectorTask extends CollectorTask<Collector> {
                 boolean firstRun = ((repo.getLastUpdated() == 0) || ((start - repo.getLastUpdated()) > FOURTEEN_DAYS_MILLISECONDS));
                 repo.removeLastUpdateDate();  //moved last update date to collector item. This is to clean old data.
                 try {
-                    LOG.info(repo.getOptions().toString() + "::" + repo.getBranch() + ":: get commits");
-                    // Step 1: Get all the commits
-                    for (Commit commit : gitHubClient.getCommits(repo, firstRun, commitExclusionPatterns)) {
-                        LOG.debug(commit.getTimestamp() + ":::" + commit.getScmCommitLog());
-                        if (isNewCommit(repo, commit)) {
-                            commit.setCollectorItemId(repo.getId());
-                            commitRepository.save(commit);
-                            commitCount++;
-                        }
-                    }
+                    LOG.info(repo.getOptions().toString() + "::" + repo.getBranch() + ":: get workflows");
                     
-                    // TO DO gitHubClient.getWorkflow(repo, firstRun, commitExclusionPatterns)
+                    // Step 1: Get all the Workflows and save if not exist
+                    gitHubWorkflowClient.getWorkflows(repo, commitExclusionPatterns).parallelStream().filter(checkWorkFlowExist).
+                    forEach(workflow -> {
+                    	workflowRepository.save(workflow);
+                    });
+                  
+                    
+                    
+                    
+                    
 
                  
                 } catch (HttpStatusCodeException hc) {
@@ -298,7 +306,7 @@ public class GitHubCollectorTask extends CollectorTask<Collector> {
         return pulledRepos;
     }
 
-
+    
     private boolean isNewCommit(GitHub repo, Commit commit) {
         return commitRepository.findByCollectorItemIdAndScmRevisionNumber(
                 repo.getId(), commit.getScmRevisionNumber()) == null;

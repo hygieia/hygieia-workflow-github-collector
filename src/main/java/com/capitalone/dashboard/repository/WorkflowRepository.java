@@ -7,5 +7,6 @@ import com.capitalone.dashboard.model.Workflow;
 
 public interface WorkflowRepository<T extends Workflow> extends CrudRepository<T, ObjectId> {
 
+	public boolean exists(String workflowId);
  
 }
