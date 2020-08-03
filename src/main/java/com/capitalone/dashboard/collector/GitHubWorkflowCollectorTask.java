@@ -48,7 +48,7 @@ import com.capitalone.dashboard.repository.WorkflowRepository;
  * CollectorTask that fetches Commit information from GitHub
  */
 @Component
-public class GitHubCollectorTask extends CollectorTask<Collector> {
+public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
     private static final Log LOG = LogFactory.getLog(GitHubCollectorTask.class);
 
     private final BaseCollectorRepository<Collector> collectorRepository;
@@ -66,7 +66,7 @@ public class GitHubCollectorTask extends CollectorTask<Collector> {
     Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
     
     @Autowired
-    public GitHubCollectorTask(TaskScheduler taskScheduler,
+    public GitHubWorkflowCollectorTask(TaskScheduler taskScheduler,
                                BaseCollectorRepository<Collector> collectorRepository,
                                GitHubRepository gitHubRepoRepository,
                                CommitRepository commitRepository,
@@ -210,7 +210,11 @@ public class GitHubCollectorTask extends CollectorTask<Collector> {
                     	workflowRepository.save(workflow);
                     });
                   
-                    
+                    List<Workflow> workflows = (List<Workflow>) workflowRepository.findWorkflow(Boolean.TRUE);
+                                        
+                    workflows.parallelStream().forEach(workflow -> {
+                    	
+                    });
                     
                     
                     

@@ -4,16 +4,18 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "github_workflow")
-public class Workflow {
+public class Workflow extends CollectorItem{
 	@Indexed(unique = true)
 	private String workflowId;
 	private String name;
 	private String state;
-	
-	public Workflow(String workflowId, String name, String state) {
+	private Boolean enabled;
+		
+	public Workflow(String workflowId, String name, String state, Boolean enabled) {
 		this.workflowId = workflowId;
 		this.name = name;
 		this.state = state;
+		this.enabled =enabled;
 	}
 
 	public String getWorkflowId() {
@@ -39,6 +41,15 @@ public class Workflow {
 	public void setState(String state) {
 		this.state = state;
 	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
+	
 	
 	
 }
