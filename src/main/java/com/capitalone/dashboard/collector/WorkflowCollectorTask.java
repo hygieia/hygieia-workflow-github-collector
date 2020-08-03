@@ -37,6 +37,8 @@ import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitHub;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.Workflow;
+import com.capitalone.dashboard.model.WorkflowRun;
+import com.capitalone.dashboard.model.WorkflowRunJob;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
@@ -48,14 +50,14 @@ import com.capitalone.dashboard.repository.WorkflowRepository;
  * CollectorTask that fetches Commit information from GitHub
  */
 @Component
-public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
+public class WorkflowCollectorTask extends CollectorTask<Collector> {
     private static final Log LOG = LogFactory.getLog(GitHubCollectorTask.class);
 
     private final BaseCollectorRepository<Collector> collectorRepository;
     private final GitHubRepository gitHubRepoRepository;
     private final CommitRepository commitRepository;
     private final GitRequestRepository gitRequestRepository;
-    private final GitHubWorkflowClient gitHubWorkflowClient;
+    private final WorkflowClient workflowClient;
     private final GitHubSettings gitHubSettings;
     private final ComponentRepository dbComponentRepository;
     private static final long FOURTEEN_DAYS_MILLISECONDS = 14 * 24 * 60 * 60 * 1000;
@@ -66,12 +68,12 @@ public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
     Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
     
     @Autowired
-    public GitHubWorkflowCollectorTask(TaskScheduler taskScheduler,
+    public WorkflowCollectorTask(TaskScheduler taskScheduler,
                                BaseCollectorRepository<Collector> collectorRepository,
                                GitHubRepository gitHubRepoRepository,
                                CommitRepository commitRepository,
                                GitRequestRepository gitRequestRepository,
-                               GitHubWorkflowClient gitHubWorkflowClient,
+                               WorkflowClient workflowClient,
                                GitHubSettings gitHubSettings,
                                ComponentRepository dbComponentRepository,
                                WorkflowRepository<Workflow> workflowRepository) {
@@ -79,7 +81,7 @@ public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
         this.collectorRepository = collectorRepository;
         this.gitHubRepoRepository = gitHubRepoRepository;
         this.commitRepository = commitRepository;
-        this.gitHubWorkflowClient = gitHubWorkflowClient;
+        this.workflowClient = workflowClient;
         this.gitHubSettings = gitHubSettings;
         this.dbComponentRepository = dbComponentRepository;
         this.gitRequestRepository = gitRequestRepository;
@@ -95,7 +97,7 @@ public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
     @Override
     public Collector getCollector() {
         Collector protoType = new Collector();
-        protoType.setName("GitHub");
+        protoType.setName("GitHubWorkflow");
         protoType.setCollectorType(CollectorType.GITWORKFLOW);
         protoType.setOnline(true);
         protoType.setEnabled(true);
@@ -175,7 +177,7 @@ public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
         int commitCount = 0;
         int pullCount = 0;
         int issueCount = 0;
-       
+    
         //clean(collector);
         
         String proxyUrl = gitHubSettings.getProxy();
@@ -205,21 +207,33 @@ public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
                     LOG.info(repo.getOptions().toString() + "::" + repo.getBranch() + ":: get workflows");
                     
                     // Step 1: Get all the Workflows and save if not exist
-                    gitHubWorkflowClient.getWorkflows(repo, commitExclusionPatterns).parallelStream().filter(checkWorkFlowExist).
+                    workflowClient.getWorkflows(repo, commitExclusionPatterns).parallelStream().filter(checkWorkFlowExist).
                     forEach(workflow -> {
                     	workflowRepository.save(workflow);
                     });
                   
                     List<Workflow> workflows = (List<Workflow>) workflowRepository.findWorkflow(Boolean.TRUE);
-                                        
+                    
+                    // Step 2: Get all runs & jobs associated with each "active" workflow
                     workflows.parallelStream().forEach(workflow -> {
                     	
+                    	List<WorkflowRun> workflowRuns = workflowClient.getWorkflowRuns(repo, 
+                    			workflow.getWorkflowId(), commitExclusionPatterns);
+      
+                        for (WorkflowRun workflowRun : workflowRuns) {
+                        	List<WorkflowRunJob> workflowRunJobs = workflowClient.getWorkflowRunJobs(repo, 
+                        			workflow.getWorkflowId(), 
+                        			workflowRun.getRunId(), commitExclusionPatterns);
+                        	workflowRun.setWorkflowRunJobs(workflowRunJobs);
+                        }
+                        
+                        workflow.setWorkflowRuns(workflowRuns);
+                        
+                        workflowRepository.save(workflow);
+
                     });
                     
-                    
-                    
-
-                 
+                                     
                 } catch (HttpStatusCodeException hc) {
                     LOG.error("Error fetching commits for:" + repo.getRepoUrl(), hc);
                     if (! (isRateLimitError(hc) || hc.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) ) {

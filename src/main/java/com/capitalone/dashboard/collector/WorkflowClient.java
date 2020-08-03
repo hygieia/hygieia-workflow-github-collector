@@ -14,14 +14,12 @@ import com.capitalone.dashboard.model.WorkflowRunJobStep;
 /**
  * Client for fetching workflow history from GitHub
  */
-public interface GitHubWorkflowClient {
+public interface WorkflowClient {
 
 	List<Workflow> getWorkflows(GitHub repo, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
 
 	List<WorkflowRun> getWorkflowRuns(GitHub repo, String workflowId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
 
-	List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String workflowRunId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
-
-	List<WorkflowRunJobStep> getWorkflowRunJobSteps(GitHub repo, List<WorkflowRunJob> jobs, boolean firstRun, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String workflowId, String workflowRunId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
 
 }

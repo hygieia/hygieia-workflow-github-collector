@@ -1,6 +1,8 @@
 package com.capitalone.dashboard.model;
 
-	import org.bson.types.ObjectId;
+	import java.util.List;
+
+import org.bson.types.ObjectId;
 	import org.springframework.data.mongodb.core.index.Indexed;
 	import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,16 +11,17 @@ package com.capitalone.dashboard.model;
 	@Document(collection="github_workflow_run_job")
 	public class WorkflowRunJob extends BaseModel{
 		@Indexed(unique = true)
-		private Long workflowId;
-		private Long runId;
-		private Long jobId;
+		private String workflowId;
+		private String runId;
+		private String jobId;
 		private String status;
 		private String conclusion;
 		private String started_at;
 		private String completed_at;
 		private String name;
+		private List<WorkflowRunJobStep> workflowRunJobSteps;
 		
-		public WorkflowRunJob(Long workflowId, Long runId, Long jobId,
+		public WorkflowRunJob(String workflowId, String runId, String jobId,
 				String status, String conclusion, String started_at, String completed_at,
 				String name) {
 			this.workflowId = workflowId;
@@ -31,27 +34,27 @@ package com.capitalone.dashboard.model;
 			this.name = name;
 		}
 
-		public Long getWorkflowId() {
+		public String getWorkflowId() {
 			return workflowId;
 		}
 
-		public void setWorkflowId(Long workflowId) {
+		public void setWorkflowId(String workflowId) {
 			this.workflowId = workflowId;
 		}
 
-		public Long getRunId() {
+		public String getRunId() {
 			return runId;
 		}
 
-		public void setRunId(Long runId) {
+		public void setRunId(String runId) {
 			this.runId = runId;
 		}
 
-		public Long getJobId() {
+		public String getJobId() {
 			return jobId;
 		}
 
-		public void setJobId(Long jobId) {
+		public void setJobId(String jobId) {
 			this.jobId = jobId;
 		}
 
@@ -93,6 +96,14 @@ package com.capitalone.dashboard.model;
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public List<WorkflowRunJobStep> getWorkflowRunJobSteps() {
+			return workflowRunJobSteps;
+		}
+
+		public void setWorkflowRunJobSteps(List<WorkflowRunJobStep> workflowRunJobSteps) {
+			this.workflowRunJobSteps = workflowRunJobSteps;
 		}
 
 }

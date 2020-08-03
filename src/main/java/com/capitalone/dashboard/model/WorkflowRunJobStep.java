@@ -9,17 +9,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection="github_workflow_run_job_step")
 public class WorkflowRunJobStep extends BaseModel{
 	@Indexed(unique = true)
-	private Long workflowId;
-	private Long runId;
-	private Long jobId;
-	private Long stepNumber;
+	private String workflowId;
+	private String runId;
+	private String jobId;
+	private String stepNumber;
 	private String status;
 	private String conclusion;
 	private String started_at;
 	private String completed_at;
 	private String name;
 	
-	public WorkflowRunJobStep(Long workflowId, Long runId, Long jobId, Long stepNumber,
+	public WorkflowRunJobStep(String workflowId, String runId, String jobId, String stepNumber,
 			String status, String conclusion, String started_at, String completed_at,
 			String name) {
 		this.workflowId = workflowId;
@@ -33,35 +33,35 @@ public class WorkflowRunJobStep extends BaseModel{
 		this.name = name;
 	}
 
-	public Long getWorkflowId() {
+	public String getWorkflowId() {
 		return workflowId;
 	}
 
-	public void setWorkflowId(Long workflowId) {
+	public void setWorkflowId(String workflowId) {
 		this.workflowId = workflowId;
 	}
 
-	public Long getRunId() {
+	public String getRunId() {
 		return runId;
 	}
 
-	public void setRunId(Long runId) {
+	public void setRunId(String runId) {
 		this.runId = runId;
 	}
 
-	public Long getJobId() {
+	public String getJobId() {
 		return jobId;
 	}
 
-	public void setJobId(Long jobId) {
+	public void setJobId(String jobId) {
 		this.jobId = jobId;
 	}
 
-	public Long getStepNumber() {
+	public String getStepNumber() {
 		return stepNumber;
 	}
 
-	public void setStepNumber(Long stepNumber) {
+	public void setStepNumber(String stepNumber) {
 		this.stepNumber = stepNumber;
 	}
 
