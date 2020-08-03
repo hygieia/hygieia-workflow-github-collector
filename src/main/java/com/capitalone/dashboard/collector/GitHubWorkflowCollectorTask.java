@@ -211,7 +211,7 @@ public class GitHubWorkflowCollectorTask extends CollectorTask<Collector> {
                     });
                   
                     List<Workflow> workflows = (List<Workflow>) workflowRepository.findWorkflow(Boolean.TRUE);
-                                        
+                    // get all the runs                    
                     workflows.parallelStream().forEach(workflow -> {
                     	
                     });
