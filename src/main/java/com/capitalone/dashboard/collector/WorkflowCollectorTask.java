@@ -40,10 +40,8 @@ import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
-import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.GitHubRepository;
-import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.repository.WorkflowRepository;
 
 /**
@@ -55,14 +53,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
 
     private final BaseCollectorRepository<Collector> collectorRepository;
     private final GitHubRepository gitHubRepoRepository;
-    private final CommitRepository commitRepository;
-    private final GitRequestRepository gitRequestRepository;
     private final WorkflowClient workflowClient;
     private final GitHubSettings gitHubSettings;
     private final ComponentRepository dbComponentRepository;
     private static final long FOURTEEN_DAYS_MILLISECONDS = 14 * 24 * 60 * 60 * 1000;
     private static final String API_RATE_LIMIT_MESSAGE = "API rate limit exceeded";
-    private List<Pattern> commitExclusionPatterns = new ArrayList<>();
     private WorkflowRepository<Workflow> workflowRepository;
 
     Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
@@ -71,8 +66,6 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     public WorkflowCollectorTask(TaskScheduler taskScheduler,
                                BaseCollectorRepository<Collector> collectorRepository,
                                GitHubRepository gitHubRepoRepository,
-                               CommitRepository commitRepository,
-                               GitRequestRepository gitRequestRepository,
                                WorkflowClient workflowClient,
                                GitHubSettings gitHubSettings,
                                ComponentRepository dbComponentRepository,
@@ -80,18 +73,10 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         super(taskScheduler, "GitHub");
         this.collectorRepository = collectorRepository;
         this.gitHubRepoRepository = gitHubRepoRepository;
-        this.commitRepository = commitRepository;
         this.workflowClient = workflowClient;
         this.gitHubSettings = gitHubSettings;
         this.dbComponentRepository = dbComponentRepository;
-        this.gitRequestRepository = gitRequestRepository;
         this.workflowRepository = workflowRepository;
-        if (!CollectionUtils.isEmpty(gitHubSettings.getNotBuiltCommits())) {
-            for (String regExStr : gitHubSettings.getNotBuiltCommits()) {
-                Pattern pattern = Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE);
-                commitExclusionPatterns.add(pattern);
-            }
-        }
     }
 
     @Override
@@ -174,9 +159,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         logBanner("Starting...");
         long start = System.currentTimeMillis();
         int repoCount = 0;
-        int commitCount = 0;
-        int pullCount = 0;
-        int issueCount = 0;
+        int workflowCount = 0;
     
         //clean(collector);
         
@@ -207,7 +190,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                     LOG.info(repo.getOptions().toString() + "::" + repo.getBranch() + ":: get workflows");
                     
                     // Step 1: Get all the Workflows and save if not exist
-                    workflowClient.getWorkflows(repo, commitExclusionPatterns).parallelStream().filter(checkWorkFlowExist).
+                    workflowClient.getWorkflows(repo).parallelStream().filter(checkWorkFlowExist).
                     forEach(workflow -> {
                     	workflowRepository.save(workflow);
                     });
@@ -218,24 +201,24 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                     workflows.parallelStream().forEach(workflow -> {
                     	
                     	List<WorkflowRun> workflowRuns = workflowClient.getWorkflowRuns(repo, 
-                    			workflow.getWorkflowId(), commitExclusionPatterns);
+                    			workflow.getWorkflowId());
       
                         for (WorkflowRun workflowRun : workflowRuns) {
                         	List<WorkflowRunJob> workflowRunJobs = workflowClient.getWorkflowRunJobs(repo, 
-                        			workflow.getWorkflowId(), 
-                        			workflowRun.getRunId(), commitExclusionPatterns);
+                        			workflow.getWorkflowId(), workflowRun.getRunId());
                         	workflowRun.setWorkflowRunJobs(workflowRunJobs);
                         }
                         
                         workflow.setWorkflowRuns(workflowRuns);
                         
+                        workflowCount++;
                         workflowRepository.save(workflow);
 
                     });
                     
                                      
                 } catch (HttpStatusCodeException hc) {
-                    LOG.error("Error fetching commits for:" + repo.getRepoUrl(), hc);
+                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), hc);
                     if (! (isRateLimitError(hc) || hc.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) ) {
                         CollectionError error = new CollectionError(hc.getStatusCode().toString(), hc.getMessage());
                         repo.getErrors().add(error);
@@ -243,18 +226,18 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                 } catch (ResourceAccessException ex) {
                     //handle case where repo is valid but github returns connection refused due to outages??
                     if (ex.getMessage() != null && ex.getMessage().contains("Connection refused")) {
-                        LOG.error("Error fetching commits for:" + repo.getRepoUrl(), ex);
+                        LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
                     } else {
-                        LOG.error("Error fetching commits for:" + repo.getRepoUrl(), ex);
+                        LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
                         CollectionError error = new CollectionError(CollectionError.UNKNOWN_HOST, repo.getRepoUrl());
                         repo.getErrors().add(error);
                     }
                 } catch (RestClientException | MalformedURLException ex) {
-                    LOG.error("Error fetching commits for:" + repo.getRepoUrl(), ex);
+                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
                     CollectionError error = new CollectionError(CollectionError.UNKNOWN_HOST, repo.getRepoUrl());
                     repo.getErrors().add(error);
                 } catch (HygieiaException he) {
-                    LOG.error("Error fetching commits for:" + repo.getRepoUrl(), he);
+                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), he);
                     CollectionError error = new CollectionError("Bad repo url", repo.getRepoUrl());
                     repo.getErrors().add(error);
                 }
@@ -262,48 +245,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
             }
             repoCount++;
         }
-        log("New Commits", start, commitCount);
+        log("New Workflows", start, workflowCount);
 
         log("Finished", start);
     }
 
-
-    private int processList(GitHub repo, List<GitRequest> entries, String type) {
-        int count = 0;
-        if (CollectionUtils.isEmpty(entries)) return 0;
-
-        for (GitRequest entry : entries) {
-            LOG.debug(entry.getTimestamp() + ":::" + entry.getScmCommitLog());
-            GitRequest existing = gitRequestRepository.findByCollectorItemIdAndNumberAndRequestType(repo.getId(), entry.getNumber(), type);
-
-            if (existing == null) {
-                entry.setCollectorItemId(repo.getId());
-                count++;
-            } else {
-                entry.setId(existing.getId());
-                entry.setCollectorItemId(repo.getId());
-            }
-            gitRequestRepository.save(entry);
-
-            //fix merge commit type for squash merged and rebased merged PRs
-            //PRs that were squash merged or rebase merged have only one parent
-            if ("pull".equalsIgnoreCase(type) && "merged".equalsIgnoreCase(entry.getState())) {
-                List<Commit> commits = commitRepository.findByScmRevisionNumber(entry.getScmRevisionNumber());
-                for(Commit commit : commits) {
-                    if (commit.getType() != null) {
-                        if (commit.getType() != CommitType.Merge) {
-                            commit.setType(CommitType.Merge);
-                            commitRepository.save(commit);
-                        }
-                    } else {
-                        commit.setType(CommitType.Merge);
-                        commitRepository.save(commit);
-                    }
-                }
-            }
-        }
-        return count;
-    }
 
     private boolean isRateLimitError(HttpStatusCodeException hc) {
         String response = hc.getResponseBodyAsString();
@@ -322,16 +268,5 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         if (CollectionUtils.isEmpty(pulledRepos)) { return new ArrayList<>(); }
 
         return pulledRepos;
-    }
-
-    
-    private boolean isNewCommit(GitHub repo, Commit commit) {
-        return commitRepository.findByCollectorItemIdAndScmRevisionNumber(
-                repo.getId(), commit.getScmRevisionNumber()) == null;
-    }
-
-    private GitRequest getExistingRequest(GitHub repo, GitRequest request, String type) {
-        return gitRequestRepository.findByCollectorItemIdAndNumberAndRequestType(
-                repo.getId(), request.getNumber(), type);
     }
 }

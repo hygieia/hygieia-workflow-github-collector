@@ -16,10 +16,10 @@ import com.capitalone.dashboard.model.WorkflowRunJobStep;
  */
 public interface WorkflowClient {
 
-	List<Workflow> getWorkflows(GitHub repo, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<Workflow> getWorkflows(GitHub repo) throws MalformedURLException, HygieiaException;
 
-	List<WorkflowRun> getWorkflowRuns(GitHub repo, String workflowId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<WorkflowRun> getWorkflowRuns(GitHub repo, String workflowId) throws MalformedURLException, HygieiaException;
 
-	List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String workflowId, String workflowRunId, List<Pattern> exclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String workflowId, String workflowRunId) throws MalformedURLException, HygieiaException;
 
 }

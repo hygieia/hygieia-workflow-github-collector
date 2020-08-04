@@ -75,8 +75,7 @@ public class DefaultWorkflowClient implements WorkflowClient {
      * @throws HygieiaException
      */
 	@Override
-	public List<Workflow> getWorkflows(GitHub repo, 
-			List<Pattern> commitExclusionPatterns)
+	public List<Workflow> getWorkflows(GitHub repo)
 			throws MalformedURLException, HygieiaException {
 
         List<Workflow> workflows = new ArrayList<>();
@@ -89,7 +88,8 @@ public class DefaultWorkflowClient implements WorkflowClient {
         String apiUrl = gitHubParsed.getApiUrl();
         // To Do check changes the url: workflowRuns
         String queryUrl = apiUrl.concat("/actions/workflows/" +
-        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
+        		"?branch=" + repo.getBranch());
+//        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
         String decryptedPassword = repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
         String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
@@ -114,17 +114,17 @@ public class DefaultWorkflowClient implements WorkflowClient {
                 		name,state,enabled,created_at,updated_at);
                 workflows.add(workflow);
   
-                if (CollectionUtils.isEmpty(jsonArray)) {
+            }
+            if (CollectionUtils.isEmpty(jsonArray)) {
+                lastPage = true;
+            } else {
+                if (isThisLastPage(response)) {
                     lastPage = true;
                 } else {
-                    if (isThisLastPage(response)) {
-                        lastPage = true;
-                    } else {
-                        lastPage = false;
-                        queryUrlPage = getNextPageUrl(response);
-                    }
+                    lastPage = false;
+                    queryUrlPage = getNextPageUrl(response);
                 }
-           }
+            }
         }
         return workflows;
 	}
@@ -139,8 +139,7 @@ public class DefaultWorkflowClient implements WorkflowClient {
      * @throws HygieiaException
      */
 	@Override
-	public List<WorkflowRun> getWorkflowRuns(GitHub repo, String pWorkflowId, 
-			List<Pattern> commitExclusionPatterns)
+	public List<WorkflowRun> getWorkflowRuns(GitHub repo, String pWorkflowId)
 			throws MalformedURLException, HygieiaException {
 
         List<WorkflowRun> workflowRuns = new ArrayList<>();
@@ -153,7 +152,8 @@ public class DefaultWorkflowClient implements WorkflowClient {
         String apiUrl = gitHubParsed.getApiUrl();
         // To Do check changes the url: workflowRuns
         String queryUrl = apiUrl.concat("/actions/workflows/" + pWorkflowId + "/runs" +
-        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
+        		"?branch=" + repo.getBranch());
+//				"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
         String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
         String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
@@ -176,17 +176,17 @@ public class DefaultWorkflowClient implements WorkflowClient {
                 		runId, status, conclusion);
                 workflowRuns.add(workflowRun);
   
-                if (CollectionUtils.isEmpty(jsonArray)) {
+            }
+            if (CollectionUtils.isEmpty(jsonArray)) {
+                lastPage = true;
+            } else {
+                if (isThisLastPage(response)) {
                     lastPage = true;
                 } else {
-                    if (isThisLastPage(response)) {
-                        lastPage = true;
-                    } else {
-                        lastPage = false;
-                        queryUrlPage = getNextPageUrl(response);
-                    }
+                    lastPage = false;
+                    queryUrlPage = getNextPageUrl(response);
                 }
-           }
+            }
         }
         return workflowRuns;
 	}
@@ -202,7 +202,7 @@ public class DefaultWorkflowClient implements WorkflowClient {
      * @throws HygieiaException
      */
 	@Override
-	public List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String pWorkflowId, String pWorkflowRunId, List<Pattern> exclusionPatterns)
+	public List<WorkflowRunJob> getWorkflowRunJobs(GitHub repo, String pWorkflowId, String pWorkflowRunId)
 			throws MalformedURLException, HygieiaException {
         List<WorkflowRunJob> workflowRunJobs = new ArrayList<>();
         List<WorkflowRunJobStep> workflowRunJobSteps = new ArrayList<>();
@@ -215,7 +215,8 @@ public class DefaultWorkflowClient implements WorkflowClient {
         String apiUrl = gitHubParsed.getApiUrl();
         // To Do check changes the url: workflowRuns
         String queryUrl = apiUrl.concat("/actions/run/" + pWorkflowRunId + "/jobs" +
-        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
+        		"?branch=" + repo.getBranch());
+//        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
         String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
         String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
@@ -260,17 +261,17 @@ public class DefaultWorkflowClient implements WorkflowClient {
                 workflowRunJob.setWorkflowRunJobSteps(workflowRunJobSteps);
                 workflowRunJobs.add(workflowRunJob);
   
-                if (CollectionUtils.isEmpty(jsonArray)) {
+            }
+            if (CollectionUtils.isEmpty(jsonArray)) {
+                lastPage = true;
+            } else {
+                if (isThisLastPage(response)) {
                     lastPage = true;
                 } else {
-                    if (isThisLastPage(response)) {
-                        lastPage = true;
-                    } else {
-                        lastPage = false;
-                        queryUrlPage = getNextPageUrl(response);
-                    }
+                    lastPage = false;
+                    queryUrlPage = getNextPageUrl(response);
                 }
-           }
+            }
         }
         return workflowRunJobs;
 	}
