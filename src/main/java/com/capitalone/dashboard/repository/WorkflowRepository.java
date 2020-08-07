@@ -13,6 +13,9 @@ public interface WorkflowRepository<T extends Workflow> extends CrudRepository<T
 	public boolean exists(String workflowId);
 	
 	@Query(value = "{'enabled' : ?0}")
-	public List<Workflow> findWorkflow(Boolean enabled);
+	public List<Workflow> findEnabledWorkflows(Boolean enabled);
+	
+	@Query(value = "{'workflowId' : ?0}")
+	public Workflow findByWorkflowId(String workflowId);
  
 }

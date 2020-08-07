@@ -14,7 +14,6 @@ public class Workflow extends CollectorItem{
 	private String created_at;
 	private String updated_at;
 	private Boolean enabled;
-	private List<WorkflowRun> workflowRuns;
 		
 	public Workflow(String workflowId, String name, String state, Boolean enabled) {
 		this.workflowId = workflowId;
@@ -78,14 +77,6 @@ public class Workflow extends CollectorItem{
 
 	public void setUpdated_at(String updated_at) {
 		this.updated_at = updated_at;
-	}
-
-	public List<WorkflowRun> getWorkflowRuns() {
-		return workflowRuns;
-	}
-
-	public void setWorkflowRuns(List<WorkflowRun> workflowRuns) {
-		this.workflowRuns = workflowRuns;
 	}
 		
 }

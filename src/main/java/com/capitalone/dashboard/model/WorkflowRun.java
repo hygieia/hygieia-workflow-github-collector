@@ -18,7 +18,6 @@ public class WorkflowRun extends BaseModel{
 	private String conclusion;
 	private String created_at;
 	private String updated_at;
-	private List<WorkflowRunJob> workflowRunJobs;
 	
 	public WorkflowRun(String workflowId, String runId, String status, String conclusion) {
 		this.workflowId = workflowId;
@@ -92,14 +91,6 @@ public class WorkflowRun extends BaseModel{
 
 	public void setUpdated_at(String updated_at) {
 		this.updated_at = updated_at;
-	}
-
-	public List<WorkflowRunJob> getWorkflowRunJobs() {
-		return workflowRunJobs;
-	}
-
-	public void setWorkflowRunJobs(List<WorkflowRunJob> workflowRunJobs) {
-		this.workflowRunJobs = workflowRunJobs;
 	}
 
 }

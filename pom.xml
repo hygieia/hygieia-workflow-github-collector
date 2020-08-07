@@ -247,7 +247,7 @@
           <skip>${japicmp.skip}</skip>
         </configuration>
       </plugin>
-      <plugin>
+      <!--  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${maven.checkstyle.plugin.version}</version>
@@ -268,7 +268,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
