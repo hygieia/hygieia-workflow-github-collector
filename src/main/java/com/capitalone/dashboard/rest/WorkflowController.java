@@ -34,14 +34,14 @@ public class WorkflowController {
 	@RequestMapping(value = "/collector/docker/meta/data", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<ComponentData> getDockerMetaData() {
 		LOG.debug("Call Recieved @ /collector/docker/meta/data :: ");
-		return ResponseEntity.ok(dockerService.getDockerMetaData());
+		return ResponseEntity.ok(workflowService.getWorkflowMetaData());
 	}
 	 
 	 
 	@RequestMapping(value = "/collector/docker/cpu/stats", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<ComponentData> getDockerCpuStats() {
 		LOG.debug("Call Recieved @ /collector/docker/cpu/stats :: ");
-		return ResponseEntity.ok(dockerService.getDockerCpuStats());
+		return ResponseEntity.ok(workflowService.getWorkflowStats());
 	}
 	
 	// TO DO : Need REST service to return a List(JSONObject) to have all the Workflows details

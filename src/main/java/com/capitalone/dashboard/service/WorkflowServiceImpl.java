@@ -12,8 +12,13 @@ import org.springframework.stereotype.Service;
 
 import com.capitalone.dashboard.collector.GitHubSettings;
 import com.capitalone.dashboard.model.ComponentData;
+import com.capitalone.dashboard.model.Series;
 import com.capitalone.dashboard.model.Workflow;
+import com.capitalone.dashboard.model.WorkflowRun;
+import com.capitalone.dashboard.model.WorkflowRunJob;
 import com.capitalone.dashboard.repository.WorkflowRepository;
+import com.capitalone.dashboard.repository.WorkflowRunJobRepository;
+import com.capitalone.dashboard.repository.WorkflowRunRepository;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -21,6 +26,12 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 	@Autowired
 	WorkflowRepository<Workflow> workflowRepository;
+	
+	@Autowired
+	WorkflowRunRepository<WorkflowRun> workflowRunRepository;
+	
+	@Autowired
+	WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
 
 	@Autowired
 	GitHubSettings gitHubSettings;
@@ -54,37 +65,26 @@ public class WorkflowServiceImpl implements WorkflowService {
 	@Override
 	public ComponentData getWorkflowMetaData() {
 		ComponentData componentData = new ComponentData();
-		String[] uris = gitHubSettings.getGitHubStatsUri().split(",");
+		// TODO should there be a "workflowSettings" from which we get this URI?
+		//String[] uris = gitHubSettings.getGitHubStatsUri().split(",");
+		String[] uris = {"mock uri1"};
 		JSONObject data = new JSONObject();
 
 		for (String uri : uris) {
 			switch (uri.toUpperCase()) {
-			case "VOLUMES":
-				List<Volume> volumes = (List<Volume>) volumeRepository.findAll();
-				data.put("volumes", volumes);
+			case "WORKFLOWS":
+				List<Workflow> workflows = (List<Workflow>) workflowRepository.findAll();
+				data.put("workflows", workflows);
 				break;
 
-			case "NETWORKS":
-				List<Network> networks = (List<Network>) networkRepository.findAll();
-				data.put("networks", networks);
+			case "WORKFLOWRUNS":
+				List<WorkflowRun> workflowRuns = (List<WorkflowRun>) workflowRunRepository.findAll();
+				data.put("workflowRuns", workflowRuns);
 				break;
 
-			case "NODES":
-				List<Node> nodes = (List<Node>) nodeRepository.findAll();
-				data.put("nodes", nodes);
-				break;
-
-			case "TASKS":
-				List<Task> tasks = (List<Task>) taskRepository.findAll();
-				data.put("tasks", tasks);
-				break;
-
-			case "SERVICES":
-				break;
-
-			case "CONTAINERS":
-				List<Container> containers = (List<Container>) containerRepository.findAll();
-				data.put("containers", containers);
+			case "WORKFLOWRUNJOBS":
+				List<WorkflowRunJob> workflowRunJobs = (List<WorkflowRunJob>) workflowRunJobRepository.findAll();
+				data.put("workflowRunJobs", workflowRunJobs);
 				break;
 
 			default:
@@ -93,8 +93,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 		}
 
-		List<Processes> processes = (List<Processes>) processesRepository.findAll();
-		data.put("processes", processes);
+		// TODO is this needed?
+		//List<Processes> processes = (List<Processes>) processesRepository.findAll();
+		//data.put("processes", processes);
 
 		componentData.setData(data);
 		return componentData;
@@ -104,9 +105,10 @@ public class WorkflowServiceImpl implements WorkflowService {
 	@Override
 	public ComponentData getWorkflowStats() {
 		ComponentData componentData = new ComponentData();
-		List<CPUStats> cpuStats = (List<CPUStats>) cpuStatsRepository.findAll();
+		// TODO what does this need?
+		//List<CPUStats> cpuStats = (List<CPUStats>) cpuStatsRepository.findAll();
 		List<Series> data = new ArrayList<Series>();
-		if (cpuStats != null && cpuStats.size() > 0) {
+		/*if (cpuStats != null && cpuStats.size() > 0) {
 			CPUStats stats = cpuStats.get(0);
 
 			Series systemCpuUsage = new Series();
@@ -130,7 +132,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 			memoryStatsLimit.setValue(stats.getMemoryStats().getLimit());
 			data.add(memoryStatsLimit);
 
-		}
+		}*/
 
 		componentData.setData(data);
 		return componentData;

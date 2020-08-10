@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -32,10 +31,7 @@ import com.capitalone.dashboard.model.CollectionError;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
-import com.capitalone.dashboard.model.Commit;
-import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitHub;
-import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
@@ -43,13 +39,15 @@ import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.GitHubRepository;
 import com.capitalone.dashboard.repository.WorkflowRepository;
+import com.capitalone.dashboard.repository.WorkflowRunJobRepository;
+import com.capitalone.dashboard.repository.WorkflowRunRepository;
 
 /**
  * CollectorTask that fetches Commit information from GitHub
  */
 @Component
 public class WorkflowCollectorTask extends CollectorTask<Collector> {
-    private static final Log LOG = LogFactory.getLog(GitHubCollectorTask.class);
+    private static final Log LOG = LogFactory.getLog(WorkflowCollectorTask.class);
 
     private final BaseCollectorRepository<Collector> collectorRepository;
     private final GitHubRepository gitHubRepoRepository;
@@ -59,6 +57,8 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     private static final long FOURTEEN_DAYS_MILLISECONDS = 14 * 24 * 60 * 60 * 1000;
     private static final String API_RATE_LIMIT_MESSAGE = "API rate limit exceeded";
     private WorkflowRepository<Workflow> workflowRepository;
+    private WorkflowRunRepository<WorkflowRun> workflowRunRepository;
+    private WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
 
     Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
     
@@ -69,7 +69,9 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                                WorkflowClient workflowClient,
                                GitHubSettings gitHubSettings,
                                ComponentRepository dbComponentRepository,
-                               WorkflowRepository<Workflow> workflowRepository) {
+                               WorkflowRepository<Workflow> workflowRepository,
+                               WorkflowRunRepository<WorkflowRun> workflowRunRepository,
+                               WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository) {
         super(taskScheduler, "GitHub");
         this.collectorRepository = collectorRepository;
         this.gitHubRepoRepository = gitHubRepoRepository;
@@ -77,6 +79,8 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         this.gitHubSettings = gitHubSettings;
         this.dbComponentRepository = dbComponentRepository;
         this.workflowRepository = workflowRepository;
+        this.workflowRunRepository = workflowRunRepository;
+        this.workflowRunJobRepository = workflowRunJobRepository;
     }
 
     @Override
@@ -159,7 +163,6 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         logBanner("Starting...");
         long start = System.currentTimeMillis();
         int repoCount = 0;
-        int workflowCount = 0;
     
         //clean(collector);
         
@@ -182,7 +185,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
          }
          }
             
-         for (GitHub repo : enabledRepos(collector)) {
+ 		for (GitHub repo : enabledRepos(collector)) {
             if (repo.getErrorCount() < gitHubSettings.getErrorThreshold()) {
                 boolean firstRun = ((repo.getLastUpdated() == 0) || ((start - repo.getLastUpdated()) > FOURTEEN_DAYS_MILLISECONDS));
                 repo.removeLastUpdateDate();  //moved last update date to collector item. This is to clean old data.
@@ -195,23 +198,55 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                     	workflowRepository.save(workflow);
                     });
                   
-                    List<Workflow> workflows = (List<Workflow>) workflowRepository.findWorkflow(Boolean.TRUE);
+                    List<Workflow> workflows = (List<Workflow>) workflowRepository.findEnabledWorkflows(Boolean.TRUE);
                     
-                    // Step 2: Get all runs & jobs associated with each "active" workflow
+                    // Step 2: Get all runs & jobs associated with each "enabled" (active) workflow
                     workflows.parallelStream().forEach(workflow -> {
                     	
-                    	List<WorkflowRun> workflowRuns = workflowClient.getWorkflowRuns(repo, 
-                    			workflow.getWorkflowId());
+                    	String workflowId = workflow.getWorkflowId();
+                    	
+                    	List<WorkflowRun> workflowRuns;
+						try {
+							workflowRuns = workflowClient.getWorkflowRuns(repo, 
+									workflow.getWorkflowId());
       
                         for (WorkflowRun workflowRun : workflowRuns) {
-                        	List<WorkflowRunJob> workflowRunJobs = workflowClient.getWorkflowRunJobs(repo, 
-                        			workflow.getWorkflowId(), workflowRun.getRunId());
-                        	workflowRun.setWorkflowRunJobs(workflowRunJobs);
+                        	
+                        	String runId = workflowRun.getRunId();
+                        	
+                        	workflowRun.setWorkflowId(workflowId);
+                        	workflowRunRepository.save(workflowRun);
+                        	
+                        	List<WorkflowRunJob> workflowRunJobs;
+							try {
+								workflowRunJobs = workflowClient.getWorkflowRunJobs(repo, 
+										workflow.getWorkflowId(), workflowRun.getRunId());
+                        	
+								for (WorkflowRunJob job : workflowRunJobs) {
+									job.setWorkflowId(workflowId);
+									job.setRunId(runId);
+									workflowRunJobRepository.save(job);
+								}
+			                } catch (RestClientException | MalformedURLException ex) {
+			                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
+			                    CollectionError error = new CollectionError(CollectionError.UNKNOWN_HOST, repo.getRepoUrl());
+			                    repo.getErrors().add(error);
+							} catch (HygieiaException he) {
+			                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), he);
+			                    CollectionError error = new CollectionError("Bad repo url", repo.getRepoUrl());
+			                    repo.getErrors().add(error);
+			                }
                         }
+		                } catch (RestClientException | MalformedURLException ex) {
+		                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
+		                    CollectionError error = new CollectionError(CollectionError.UNKNOWN_HOST, repo.getRepoUrl());
+		                    repo.getErrors().add(error);
+						} catch (HygieiaException he) {
+		                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), he);
+		                    CollectionError error = new CollectionError("Bad repo url", repo.getRepoUrl());
+		                    repo.getErrors().add(error);
+		                }
                         
-                        workflow.setWorkflowRuns(workflowRuns);
-                        
-                        workflowCount++;
                         workflowRepository.save(workflow);
 
                     });
@@ -245,7 +280,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
             }
             repoCount++;
         }
-        log("New Workflows", start, workflowCount);
+        log("New Repos", start, repoCount);
 
         log("Finished", start);
     }
