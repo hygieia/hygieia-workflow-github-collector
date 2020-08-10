@@ -36,13 +36,26 @@ public class WorkflowController {
 		LOG.debug("Call Recieved @ /collector/docker/meta/data :: ");
 		return ResponseEntity.ok(dockerService.getDockerMetaData());
 	}
-	
+	 
 	 
 	@RequestMapping(value = "/collector/docker/cpu/stats", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<ComponentData> getDockerCpuStats() {
 		LOG.debug("Call Recieved @ /collector/docker/cpu/stats :: ");
 		return ResponseEntity.ok(dockerService.getDockerCpuStats());
 	}
+	
+	// TO DO : Need REST service to return a List(JSONObject) to have all the Workflows details
+	// Argument : No Any
 
+	// TO DO : Need REST service to return a LIST(JSONObject) to have all the Runs details 
+	// The Run object should give the name ,status, last updated Date, conclusion
+	// Argument : Workflow Id
+	
+	  
+	// TO DO : Need REST service to return a LIST(JSONObject) to have all the JobDetails details 
+	// The Run object should give the name ,status, last updated Date, 
+	// Argument : Run Id
+	
+	
 	
 }
