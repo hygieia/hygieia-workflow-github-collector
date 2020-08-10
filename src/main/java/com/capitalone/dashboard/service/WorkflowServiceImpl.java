@@ -44,8 +44,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 	@Override
 	public ComponentData getWorkflowMetaCount() {
 		// TODO Auto-generated method stub
-		CrudRepository[] obj = { workflowRepository };
-		String[] names = { "Workflow" };
+		CrudRepository[] obj = { workflowRepository, workflowRunRepository, workflowRunJobRepository };
+		String[] names = { "Workflow", "WorkflowRun", "WorkflowRunJob" };
 		int i = 0;
 		ComponentData componentData = new ComponentData();
 		List<Series> data = new ArrayList<Series>();
@@ -100,8 +100,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 		componentData.setData(data);
 		return componentData;
 	}
-	
-	
+		
 	@Override
 	public ComponentData getWorkflowStats() {
 		ComponentData componentData = new ComponentData();
@@ -135,6 +134,33 @@ public class WorkflowServiceImpl implements WorkflowService {
 		}*/
 
 		componentData.setData(data);
+		return componentData;
+	}
+	
+	@Override
+	public ComponentData getEnabledWorkflows() {
+		ComponentData componentData = new ComponentData();
+		List<Workflow> workflows = (List<Workflow>) workflowRepository.findEnabledWorkflows(true);
+
+		componentData.setData(workflows);
+		return componentData;
+	}
+	
+	@Override
+	public ComponentData getRunsByWorkflowId(String workflowId) {
+		ComponentData componentData = new ComponentData();
+		List<WorkflowRun> runs = (List<WorkflowRun>) workflowRunRepository.findByWorkflowId(workflowId);
+
+		componentData.setData(runs);
+		return componentData;
+	}
+	
+	@Override
+	public ComponentData getJobsByRunId(String runId) {
+		ComponentData componentData = new ComponentData();
+		List<WorkflowRunJob> jobs = (List<WorkflowRunJob>) workflowRunJobRepository.findByRunId(runId);
+
+		componentData.setData(jobs);
 		return componentData;
 	}
 

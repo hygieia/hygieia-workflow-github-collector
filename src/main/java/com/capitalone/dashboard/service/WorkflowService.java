@@ -9,5 +9,11 @@ public interface WorkflowService {
 	 ComponentData getWorkflowMetaData();
 	
 	 ComponentData getWorkflowStats(); 
+		
+	 ComponentData getEnabledWorkflows(); 
+		
+	 ComponentData getRunsByWorkflowId(String workflowId); 
+		
+	 ComponentData getJobsByRunId(String runId); 
 
 }

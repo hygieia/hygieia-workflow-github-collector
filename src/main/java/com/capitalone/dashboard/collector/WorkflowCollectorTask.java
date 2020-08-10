@@ -228,21 +228,21 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
 									workflowRunJobRepository.save(job);
 								}
 			                } catch (RestClientException | MalformedURLException ex) {
-			                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
+			                    LOG.error("Error fetching workflowRunJobs for:" + repo.getRepoUrl(), ex);
 			                    CollectionError error = new CollectionError(CollectionError.UNKNOWN_HOST, repo.getRepoUrl());
 			                    repo.getErrors().add(error);
 							} catch (HygieiaException he) {
-			                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), he);
+			                    LOG.error("Error fetching workflowRunJobs for:" + repo.getRepoUrl(), he);
 			                    CollectionError error = new CollectionError("Bad repo url", repo.getRepoUrl());
 			                    repo.getErrors().add(error);
 			                }
                         }
 		                } catch (RestClientException | MalformedURLException ex) {
-		                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), ex);
+		                    LOG.error("Error fetching workflowRuns for:" + repo.getRepoUrl(), ex);
 		                    CollectionError error = new CollectionError(CollectionError.UNKNOWN_HOST, repo.getRepoUrl());
 		                    repo.getErrors().add(error);
 						} catch (HygieiaException he) {
-		                    LOG.error("Error fetching workflows for:" + repo.getRepoUrl(), he);
+		                    LOG.error("Error fetching workflowRuns for:" + repo.getRepoUrl(), he);
 		                    CollectionError error = new CollectionError("Bad repo url", repo.getRepoUrl());
 		                    repo.getErrors().add(error);
 		                }
