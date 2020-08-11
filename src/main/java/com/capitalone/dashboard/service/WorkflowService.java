@@ -14,6 +14,10 @@ public interface WorkflowService {
 		
 	 ComponentData getRunsByWorkflowId(String workflowId); 
 		
-	 ComponentData getJobsByRunId(String runId); 
+	 ComponentData getJobByJobId(String jobId); 
+		
+	 ComponentData getJobsByRunId(String runId);
+	 
+	 ComponentData getDistinctRunStatusByWorkflow(String workflowId);
 
 }

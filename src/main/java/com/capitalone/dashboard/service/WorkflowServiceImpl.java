@@ -16,6 +16,7 @@ import com.capitalone.dashboard.model.Series;
 import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
+import com.capitalone.dashboard.repository.WorkflowCustomRepository;
 import com.capitalone.dashboard.repository.WorkflowRepository;
 import com.capitalone.dashboard.repository.WorkflowRunJobRepository;
 import com.capitalone.dashboard.repository.WorkflowRunRepository;
@@ -32,6 +33,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 	
 	@Autowired
 	WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
+	
+	@Autowired
+	WorkflowCustomRepository workflowCustomRepository;
 
 	@Autowired
 	GitHubSettings gitHubSettings;
@@ -141,7 +145,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 	public ComponentData getEnabledWorkflows() {
 		ComponentData componentData = new ComponentData();
 		List<Workflow> workflows = (List<Workflow>) workflowRepository.findEnabledWorkflows(true);
-
 		componentData.setData(workflows);
 		return componentData;
 	}
@@ -150,8 +153,15 @@ public class WorkflowServiceImpl implements WorkflowService {
 	public ComponentData getRunsByWorkflowId(String workflowId) {
 		ComponentData componentData = new ComponentData();
 		List<WorkflowRun> runs = (List<WorkflowRun>) workflowRunRepository.findByWorkflowId(workflowId);
-
 		componentData.setData(runs);
+		return componentData;
+	}
+	
+	@Override
+	public ComponentData getJobByJobId(String jobId) {
+		ComponentData componentData = new ComponentData();
+		WorkflowRunJob job = (WorkflowRunJob) workflowRunJobRepository.findByJobId(jobId);
+		componentData.setData(job);
 		return componentData;
 	}
 	
@@ -159,8 +169,15 @@ public class WorkflowServiceImpl implements WorkflowService {
 	public ComponentData getJobsByRunId(String runId) {
 		ComponentData componentData = new ComponentData();
 		List<WorkflowRunJob> jobs = (List<WorkflowRunJob>) workflowRunJobRepository.findByRunId(runId);
-
 		componentData.setData(jobs);
+		return componentData;
+	}
+	
+	@Override
+	public ComponentData getDistinctRunStatusByWorkflow(String workflowId) {
+		ComponentData componentData = new ComponentData();
+		JSONObject status = workflowCustomRepository.findDistinctRunStatusByWorkflow(workflowId);
+		componentData.setData(status);
 		return componentData;
 	}
 

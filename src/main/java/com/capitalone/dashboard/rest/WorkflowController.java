@@ -45,32 +45,34 @@ public class WorkflowController {
 		return ResponseEntity.ok(workflowService.getWorkflowStats());
 	}
 		
-	// TO DO : Need REST service to return a List(JSONObject) to have all the Workflows details
-	// Argument : No Any
 	@RequestMapping(value = "/enabled", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<ComponentData> getEnabledWorkflows() {
 		LOG.debug("Call Recieved @ /collector/workflows/enabled :: ");
 		return ResponseEntity.ok(workflowService.getEnabledWorkflows());
 	}
 
-	// TO DO : Need REST service to return a LIST(JSONObject) to have all the Runs details 
-	// The Run object should give the name ,status, last updated Date, conclusion
-	// Argument : Workflow Id
 	@RequestMapping(value = "/{workflowId}/runs", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<ComponentData> getRunsByWorkflowId(@PathVariable("workflowId") String workflowId) {
 		LOG.debug("Call Recieved @ /collector/workflows/"+workflowId+"/runs :: ");
 		return ResponseEntity.ok(workflowService.getRunsByWorkflowId(workflowId));
 	}
 	  
-	// TO DO : Need REST service to return a LIST(JSONObject) to have all the JobDetails details 
-	// The Job object should give the name ,status, last updated Date, 
-	// Argument : Run Id
-	@RequestMapping(value = "/runs/{runId/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/jobs/{jobId}", method = GET, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<ComponentData> getJobByJobId(@PathVariable("jobId") String jobId) {
+		LOG.debug("Call Recieved @ /collector/workflows/jobs/"+jobId+" :: ");
+		return ResponseEntity.ok(workflowService.getJobByJobId(jobId));
+	}
+	  
+	@RequestMapping(value = "/runs/{runId}/jobs", method = GET, produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<ComponentData> getJobsByRunId(@PathVariable("runId") String runId) {
 		LOG.debug("Call Recieved @ /collector/workflows/runs/"+runId+"/jobs :: ");
 		return ResponseEntity.ok(workflowService.getJobsByRunId(runId));
 	}
-	
-	
+	  
+	@RequestMapping(value = "/{workflowId}/aggregates/runs/status", method = GET, produces = APPLICATION_JSON_VALUE)
+	public ResponseEntity<ComponentData> getDistinctRunStatusByWorkflow(@PathVariable("workflowId") String workflowId) {
+		LOG.debug("Call Recieved @ /collector/workflows/"+workflowId+"/aggregates/runs/status/ :: ");
+		return ResponseEntity.ok(workflowService.getDistinctRunStatusByWorkflow(workflowId));
+	}
 	
 }
