@@ -16,21 +16,21 @@ import org.bson.types.ObjectId;
 		private String jobId;
 		private String status;
 		private String conclusion;
-		private String started_at;
-		private String completed_at;
+		private String startedAt;
+		private String completedAt;
 		private String name;
 		private List<WorkflowRunJobStep> workflowRunJobSteps;
 		
 		public WorkflowRunJob(String workflowId, String runId, String jobId,
-				String status, String conclusion, String started_at, String completed_at,
+				String status, String conclusion, String startedAt, String completedAt,
 				String name) {
 			this.workflowId = workflowId;
 			this.runId = runId;
 			this.jobId = jobId;
 			this.status = status;
 			this.conclusion = conclusion;
-			this.started_at = started_at;
-			this.completed_at = completed_at;
+			this.startedAt = startedAt;
+			this.completedAt = completedAt;
 			this.name = name;
 		}
 
@@ -74,20 +74,20 @@ import org.bson.types.ObjectId;
 			this.conclusion = conclusion;
 		}
 
-		public String getStarted_at() {
-			return started_at;
+		public String getStartedAt() {
+			return startedAt;
 		}
 
-		public void setStarted_at(String started_at) {
-			this.started_at = started_at;
+		public void setStartedAt(String startedAt) {
+			this.startedAt = startedAt;
 		}
 
-		public String getCompleted_at() {
-			return completed_at;
+		public String getCompletedAt() {
+			return completedAt;
 		}
 
-		public void setCompleted_at(String completed_at) {
-			this.completed_at = completed_at;
+		public void setCompletedAt(String completedAt) {
+			this.completedAt = completedAt;
 		}
 
 		public String getName() {

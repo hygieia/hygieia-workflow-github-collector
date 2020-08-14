@@ -16,8 +16,8 @@ public class WorkflowRun extends BaseModel{
 	private String event;
 	private String status;
 	private String conclusion;
-	private String created_at;
-	private String updated_at;
+	private String createdAt;
+	private String updatedAt;
 	
 	public WorkflowRun(String workflowId, String runId, String status, String conclusion) {
 		this.workflowId = workflowId;
@@ -27,14 +27,14 @@ public class WorkflowRun extends BaseModel{
 	}
 	
 	public WorkflowRun(String workflowId, String runId, String status, String conclusion,
-			String event, String created_at, String updated_at) {
+			String event, String createdAt, String updatedAt) {
 		this.workflowId = workflowId;
 		this.runId = runId;
 		this.status = status;
 		this.conclusion = conclusion;
 		this.event = event;
-		this.created_at = created_at;
-		this.updated_at = updated_at;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 	}
 
 	public String getStatus() {
@@ -77,20 +77,20 @@ public class WorkflowRun extends BaseModel{
 		this.event = event;
 	}
 
-	public String getCreated_at() {
-		return created_at;
+	public String getCreatedAt() {
+		return createdAt;
 	}
 
-	public void setCreated_at(String created_at) {
-		this.created_at = created_at;
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
 	}
 
-	public String getUpdated_at() {
-		return updated_at;
+	public String getUpdatedAt() {
+		return updatedAt;
 	}
 
-	public void setUpdated_at(String updated_at) {
-		this.updated_at = updated_at;
+	public void setUpdatedAt(String updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 }

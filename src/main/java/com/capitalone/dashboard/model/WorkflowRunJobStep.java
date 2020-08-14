@@ -15,12 +15,12 @@ public class WorkflowRunJobStep extends BaseModel{
 	private String stepNumber;
 	private String status;
 	private String conclusion;
-	private String started_at;
-	private String completed_at;
+	private String startedAt;
+	private String completedAt;
 	private String name;
 	
 	public WorkflowRunJobStep(String workflowId, String runId, String jobId, String stepNumber,
-			String status, String conclusion, String started_at, String completed_at,
+			String status, String conclusion, String startedAt, String completedAt,
 			String name) {
 		this.workflowId = workflowId;
 		this.runId = runId;
@@ -28,8 +28,8 @@ public class WorkflowRunJobStep extends BaseModel{
 		this.stepNumber = stepNumber;
 		this.status = status;
 		this.conclusion = conclusion;
-		this.started_at = started_at;
-		this.completed_at = completed_at;
+		this.startedAt = startedAt;
+		this.completedAt = completedAt;
 		this.name = name;
 	}
 
@@ -81,20 +81,20 @@ public class WorkflowRunJobStep extends BaseModel{
 		this.conclusion = conclusion;
 	}
 
-	public String getStarted_at() {
-		return started_at;
+	public String getStartedAt() {
+		return startedAt;
 	}
 
-	public void setStarted_at(String started_at) {
-		this.started_at = started_at;
+	public void setStartedAt(String startedAt) {
+		this.startedAt = startedAt;
 	}
 
-	public String getCompleted_at() {
-		return completed_at;
+	public String getCompletedAt() {
+		return completedAt;
 	}
 
-	public void setCompleted_at(String completed_at) {
-		this.completed_at = completed_at;
+	public void setCompletedAt(String completedAt) {
+		this.completedAt = completedAt;
 	}
 
 	public String getName() {
