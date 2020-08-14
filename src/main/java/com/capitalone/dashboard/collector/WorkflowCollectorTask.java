@@ -50,7 +50,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     private static final Log LOG = LogFactory.getLog(WorkflowCollectorTask.class);
 
     private final BaseCollectorRepository<Collector> collectorRepository;
-    private final GitHubRepository gitHubRepoRepository;
+    private final GitHubRepository gitHubRepository;
     private final WorkflowClient workflowClient;
     private final GitHubSettings gitHubSettings;
     private final ComponentRepository dbComponentRepository;
@@ -65,7 +65,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     @Autowired
     public WorkflowCollectorTask(TaskScheduler taskScheduler,
                                BaseCollectorRepository<Collector> collectorRepository,
-                               GitHubRepository gitHubRepoRepository,
+                               GitHubRepository gitHubRepository,
                                WorkflowClient workflowClient,
                                GitHubSettings gitHubSettings,
                                ComponentRepository dbComponentRepository,
@@ -74,7 +74,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                                WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository) {
         super(taskScheduler, "GitHub");
         this.collectorRepository = collectorRepository;
-        this.gitHubRepoRepository = gitHubRepoRepository;
+        this.gitHubRepository = gitHubRepository;
         this.workflowClient = workflowClient;
         this.gitHubSettings = gitHubSettings;
         this.dbComponentRepository = dbComponentRepository;
@@ -148,13 +148,13 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         List<GitHub> repoList = new ArrayList<>();
         Set<ObjectId> gitID = new HashSet<>();
         gitID.add(collector.getId());
-        for (GitHub repo : gitHubRepoRepository.findByCollectorIdIn(gitID)) {
+        for (GitHub repo : gitHubRepository.findByCollectorIdIn(gitID)) {
             if (repo.isPushed()) {continue;}
 
             repo.setEnabled(uniqueIDs.contains(repo.getId()));
             repoList.add(repo);
         }
-        gitHubRepoRepository.save(repoList);
+        gitHubRepository.save(repoList);
     }
 
     @Override
@@ -276,7 +276,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                     CollectionError error = new CollectionError("Bad repo url", repo.getRepoUrl());
                     repo.getErrors().add(error);
                 }
-                gitHubRepoRepository.save(repo);
+                gitHubRepository.save(repo);
             }
             repoCount++;
         }
@@ -292,7 +292,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     }
 
     private List<GitHub> enabledRepos(Collector collector) {
-        List<GitHub> repos = (List<GitHub>) gitHubRepoRepository.findEnabledGitHubRepos(collector.getId());
+        List<GitHub> repos = (List<GitHub>) gitHubRepository.findEnabledGitHubRepos(collector.getId());
 
         List<GitHub> pulledRepos 
                 =  (List<GitHub>) Optional.ofNullable(repos)
