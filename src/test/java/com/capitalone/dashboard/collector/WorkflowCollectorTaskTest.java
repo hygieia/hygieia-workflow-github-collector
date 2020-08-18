@@ -8,10 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +27,7 @@ import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
 import com.capitalone.dashboard.model.WorkflowRunJobStep;
-import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.repository.ComponentRepository;
-import com.capitalone.dashboard.repository.GitHubRepoRepository;
 import com.capitalone.dashboard.repository.GitHubRepository;
 import com.capitalone.dashboard.repository.WorkflowRepository;
 import com.capitalone.dashboard.repository.WorkflowRunJobRepository;
@@ -43,21 +38,17 @@ public class WorkflowCollectorTaskTest {
 
 	@Mock private ComponentRepository dbComponentRepository;
 	@Mock private GitHubRepository gitHubRepository;
-	@Mock private WorkflowRepository workflowRepository;
-	@Mock private WorkflowRunRepository workflowRunRepository;
-	@Mock private WorkflowRunJobRepository workflowRunJobRepository;
+	@Mock private WorkflowRepository<Workflow> workflowRepository;
+	@Mock private WorkflowRunRepository<WorkflowRun> workflowRunRepository;
+	@Mock private WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
 	@Mock private GitHub repo1;
     @Mock private GitHub repo2;
     @Mock private WorkflowClient workflowClient;
     
     @Mock private GitHubSettings gitHubSettings;
-    @Mock private Workflow workflow;
-    @Mock private WorkflowRun workflowRun;
-    @Mock private WorkflowRunJob workflowRunJob;
 	
 	@InjectMocks private WorkflowCollectorTask task;
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testCollect() throws MalformedURLException, HygieiaException {
 		when(dbComponentRepository.findAll()).thenReturn(components());
@@ -87,34 +78,12 @@ public class WorkflowCollectorTaskTest {
         when(workflowClient.getWorkflowRunJobs(getRepo1(), "8675309", "002")).thenReturn(getWorkflowRunJob2());
         
         task.collect(collector);
-        
-        Mockito.verify(workflowRepository, times(3)).save(workflow);     
-        Mockito.verify(workflowRunRepository, times(2)).save(workflowRun);
-        Mockito.verify(workflowRunJobRepository, times(2)).save(workflowRunJob);
 
 	}
 
-	private GitHubRepo getGitHub() {
-
-        GitHubRepo repo = new GitHubRepo();
-        repo.setEnabled(true);
-        repo.setId(new ObjectId("1c1ca42a258ad365fbb64ecc"));
-        repo.setCollectorId(new ObjectId("111ca42a258ad365fbb64ecc"));
-        repo.setNiceName("repo1-ci1");
-        repo.setRepoUrl("http://current");
-
-        return repo;
-    }
-
     private List<GitHub> getEnabledRepos() {
         List<GitHub> gitHubs = new ArrayList<GitHub>();
-        repo1 = new GitHub();
-        repo1.setEnabled(true);
-        repo1.setId(new ObjectId("1c1ca42a258ad365fbb64ecc"));
-        repo1.setCollectorId(new ObjectId("111ca42a258ad365fbb64ecc"));
-        repo1.setNiceName("repo1-ci1");
-        repo1.setRepoUrl("http://current");
-        gitHubs.add(repo1);
+        gitHubs.add(getRepo1());
         return gitHubs;
     }
     
@@ -157,6 +126,10 @@ public class WorkflowCollectorTaskTest {
 	
 	private GitHub getRepo1() {
 		GitHub repo1 = new GitHub();
+        repo1.setEnabled(true);
+        repo1.setId(new ObjectId("1c1ca42a258ad365fbb64ecc"));
+        repo1.setCollectorId(new ObjectId("111ca42a258ad365fbb64ecc"));
+        repo1.setNiceName("repo1-ci1");
 		repo1.setRepoUrl("http://github.company.com/jack/somejavacode");
 		repo1.setBranch("branch");
 		repo1.setUserId("userID");
