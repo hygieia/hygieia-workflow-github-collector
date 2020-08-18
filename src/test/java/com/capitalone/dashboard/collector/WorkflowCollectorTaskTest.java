@@ -1,6 +1,6 @@
 package com.capitalone.dashboard.collector;
 
-import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.net.MalformedURLException;
@@ -9,14 +9,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
@@ -70,6 +69,7 @@ public class WorkflowCollectorTaskTest {
         when(workflowClient.getWorkflows(getRepo1())).thenReturn(getWorkflows());
         
         when(workflowRepository.findEnabledWorkflows(Boolean.TRUE)).thenReturn(getEnabledWorkflows());
+        when(workflowRepository.exists(anyString())).thenReturn(true);
         
         when(workflowClient.getWorkflowRuns(getRepo1(), "8675309")).thenReturn(getWorkflowRuns());
         
