@@ -23,41 +23,276 @@ A collector to showcase the GitHub Workflow details
   WorkflowCollectorTask : As with the framework , implementing Collector Task to regularly collect the workflow details and feed into the MongoDb
   WorkflowServiceImpl: To populate the componentData model and send back to UI
   Workflow*Repository: Provides CRUD operations to elements in the MongoDb
-  
-  <h3>To build docker & mounting the application.properties while docker build</h3>
-  docker run -t -i -p port-internal:port-external -v properties_location://hygieia/config  image_name
 
+<h3>APIs Supporting Workflow Collector</h3>
 
-<h3>From Docker collector</h3>
+https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/workflows?branch=main
 
-docker network create -d bridge my-bridge-network
+{
+"total_count": 1,
+"workflows": [
+{
+"id": 2056361,
+"node_id": "MDg6V29ya2Zsb3cyMDU2MzYx",
+"name": "CI",
+"path": ".github/workflows/main.yml",
+"state": "active",
+"created_at": "2020-07-31T07:58:51.000Z",
+"updated_at": "2020-07-31T07:58:51.000Z",
+"url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/workflows/2056361",
+"html_url": "https://github.com/prash897/hygieia-workflow-github-collector/blob/main/.github/workflows/main.yml",
+"badge_url": "https://github.com/prash897/hygieia-workflow-github-collector/workflows/CI/badge.svg"
+}
+]
+}
 
-docker create -v /data --name data ubuntu
+https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/workflows/2056361/runs?branch=main
+(only showing run_number=16)
 
-http://localhost:5555/v1.24/containers/json
+{
+"total_count": 16,
+"workflow_runs": [
+{
+"id": 215712255,
+"node_id": "MDExOldvcmtmbG93UnVuMjE1NzEyMjU1",
+"head_branch": "main",
+"head_sha": "78d0d92bee17e59f75d229d83a568e9b0e45fea1",
+"run_number": 16,
+"event": "push",
+"status": "completed",
+"conclusion": "success",
+"workflow_id": 2056361,
+"url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255",
+"html_url": "https://github.com/prash897/hygieia-workflow-github-collector/actions/runs/215712255",
+"pull_requests": [],
+"created_at": "2020-08-19T19:39:50Z",
+"updated_at": "2020-08-19T19:40:06Z",
+"jobs_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255/jobs",
+"logs_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255/logs",
+"check_suite_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/check-suites/1072336053",
+"artifacts_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255/artifacts",
+"cancel_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255/cancel",
+"rerun_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255/rerun",
+"workflow_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/workflows/2056361",
+"head_commit": {
+"id": "78d0d92bee17e59f75d229d83a568e9b0e45fea1",
+"tree_id": "5555d85eba4bf5969ecd5b65aa76c736e52cbcf3",
+"message": "Work on README.md",
+"timestamp": "2020-08-19T19:39:23Z",
+"author": {
+"name": "johnmcentire",
+"email": "john.mcentire1@wipro.com"
+},
+"committer": {
+"name": "johnmcentire",
+"email": "john.mcentire1@wipro.com"
+}
+},
+"repository": {
+"id": 283535593,
+"node_id": "MDEwOlJlcG9zaXRvcnkyODM1MzU1OTM=",
+"name": "hygieia-workflow-github-collector",
+"full_name": "prash897/hygieia-workflow-github-collector",
+"private": false,
+"owner": {
+"login": "prash897",
+"id": 11367273,
+"node_id": "MDQ6VXNlcjExMzY3Mjcz",
+"avatar_url": "https://avatars2.githubusercontent.com/u/11367273?v=4",
+"gravatar_id": "",
+"url": "https://api.github.com/users/prash897",
+"html_url": "https://github.com/prash897",
+"followers_url": "https://api.github.com/users/prash897/followers",
+"following_url": "https://api.github.com/users/prash897/following{/other_user}",
+"gists_url": "https://api.github.com/users/prash897/gists{/gist_id}",
+"starred_url": "https://api.github.com/users/prash897/starred{/owner}{/repo}",
+"subscriptions_url": "https://api.github.com/users/prash897/subscriptions",
+"organizations_url": "https://api.github.com/users/prash897/orgs",
+"repos_url": "https://api.github.com/users/prash897/repos",
+"events_url": "https://api.github.com/users/prash897/events{/privacy}",
+"received_events_url": "https://api.github.com/users/prash897/received_events",
+"type": "User",
+"site_admin": false
+},
+"html_url": "https://github.com/prash897/hygieia-workflow-github-collector",
+"description": "[WIP]Hygieia collector to collect Workflow metadata associated with Github Repositories",
+"fork": true,
+"url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector",
+"forks_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/forks",
+"keys_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/keys{/key_id}",
+"collaborators_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/collaborators{/collaborator}",
+"teams_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/teams",
+"hooks_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/hooks",
+"issue_events_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/issues/events{/number}",
+"events_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/events",
+"assignees_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/assignees{/user}",
+"branches_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/branches{/branch}",
+"tags_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/tags",
+"blobs_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/blobs{/sha}",
+"git_tags_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/tags{/sha}",
+"git_refs_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/refs{/sha}",
+"trees_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/trees{/sha}",
+"statuses_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/statuses/{sha}",
+"languages_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/languages",
+"stargazers_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/stargazers",
+"contributors_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/contributors",
+"subscribers_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/subscribers",
+"subscription_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/subscription",
+"commits_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/commits{/sha}",
+"git_commits_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/commits{/sha}",
+"comments_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/comments{/number}",
+"issue_comment_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/issues/comments{/number}",
+"contents_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/contents/{+path}",
+"compare_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/compare/{base}...{head}",
+"merges_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/merges",
+"archive_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/{archive_format}{/ref}",
+"downloads_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/downloads",
+"issues_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/issues{/number}",
+"pulls_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/pulls{/number}",
+"milestones_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/milestones{/number}",
+"notifications_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/notifications{?since,all,participating}",
+"labels_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/labels{/name}",
+"releases_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/releases{/id}",
+"deployments_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/deployments"
+},
+"head_repository": {
+"id": 283535593,
+"node_id": "MDEwOlJlcG9zaXRvcnkyODM1MzU1OTM=",
+"name": "hygieia-workflow-github-collector",
+"full_name": "prash897/hygieia-workflow-github-collector",
+"private": false,
+"owner": {
+"login": "prash897",
+"id": 11367273,
+"node_id": "MDQ6VXNlcjExMzY3Mjcz",
+"avatar_url": "https://avatars2.githubusercontent.com/u/11367273?v=4",
+"gravatar_id": "",
+"url": "https://api.github.com/users/prash897",
+"html_url": "https://github.com/prash897",
+"followers_url": "https://api.github.com/users/prash897/followers",
+"following_url": "https://api.github.com/users/prash897/following{/other_user}",
+"gists_url": "https://api.github.com/users/prash897/gists{/gist_id}",
+"starred_url": "https://api.github.com/users/prash897/starred{/owner}{/repo}",
+"subscriptions_url": "https://api.github.com/users/prash897/subscriptions",
+"organizations_url": "https://api.github.com/users/prash897/orgs",
+"repos_url": "https://api.github.com/users/prash897/repos",
+"events_url": "https://api.github.com/users/prash897/events{/privacy}",
+"received_events_url": "https://api.github.com/users/prash897/received_events",
+"type": "User",
+"site_admin": false
+},
+"html_url": "https://github.com/prash897/hygieia-workflow-github-collector",
+"description": "[WIP]Hygieia collector to collect Workflow metadata associated with Github Repositories",
+"fork": true,
+"url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector",
+"forks_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/forks",
+"keys_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/keys{/key_id}",
+"collaborators_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/collaborators{/collaborator}",
+"teams_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/teams",
+"hooks_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/hooks",
+"issue_events_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/issues/events{/number}",
+"events_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/events",
+"assignees_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/assignees{/user}",
+"branches_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/branches{/branch}",
+"tags_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/tags",
+"blobs_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/blobs{/sha}",
+"git_tags_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/tags{/sha}",
+"git_refs_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/refs{/sha}",
+"trees_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/trees{/sha}",
+"statuses_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/statuses/{sha}",
+"languages_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/languages",
+"stargazers_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/stargazers",
+"contributors_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/contributors",
+"subscribers_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/subscribers",
+"subscription_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/subscription",
+"commits_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/commits{/sha}",
+"git_commits_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/git/commits{/sha}",
+"comments_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/comments{/number}",
+"issue_comment_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/issues/comments{/number}",
+"contents_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/contents/{+path}",
+"compare_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/compare/{base}...{head}",
+"merges_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/merges",
+"archive_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/{archive_format}{/ref}",
+"downloads_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/downloads",
+"issues_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/issues{/number}",
+"pulls_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/pulls{/number}",
+"milestones_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/milestones{/number}",
+"notifications_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/notifications{?since,all,participating}",
+"labels_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/labels{/name}",
+"releases_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/releases{/id}",
+"deployments_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/deployments"
+}
+}}]
 
-[{"Id":"3142cca77641d75d4c5629e6cf4c6503a19e65cd791e67e725f2ecfdb7a872ce","Names":["/redis.1.6qgb0pna6iphr7c4ijzuiihaa"],"Image":"redis:3.0.6@sha256:6a692a76c2081888b589e26e6ec835743119fe453d67ecf03df7de5b73d69842","ImageID":"sha256:d4deec2c521cdae0450218bd53c69611bacd2eb10838057a5de7dcb341c66cf5","Command":"/entrypoint.sh redis-server","Created":1590906089,"Ports":[{"PrivatePort":6379,"Type":"tcp"}],"Labels":{"com.docker.swarm.node.id":"9opfw0jjrrkehjh5mjo34ov36","com.docker.swarm.service.id":"iws2t1vxpyb6khuq6n5ygn2xf","com.docker.swarm.service.name":"redis","com.docker.swarm.task":"","com.docker.swarm.task.id":"6qgb0pna6iphr7c4ijzuiihaa","com.docker.swarm.task.name":"redis.1.6qgb0pna6iphr7c4ijzuiihaa"},"State":"running","Status":"Up 4 minutes","HostConfig":{"NetworkMode":"default"},"NetworkSettings":{"Networks":{"bridge":{"IPAMConfig":null,"Links":null,"Aliases":null,"NetworkID":"1c38bcc4cd8e861058deae9a0fdf98b73d53fb33b92e6af7a49131fd40787108","EndpointID":"823985f3185ed8f5530bfb739d80b1a70e6ef6589488101d7390801323973097","Gateway":"172.17.0.1","IPAddress":"172.17.0.2","IPPrefixLen":16,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"MacAddress":"02:42:ac:11:00:02","DriverOpts":null}}},"Mounts":[{"Type":"volume","Name":"23ae51a5bbd4e5237fb4d5c57ebbb3175fe571b19300eaf171a24e3fa7b587aa","Source":"","Destination":"/data","Driver":"local","Mode":"","RW":true,"Propagation":""}]}]
+https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255/jobs?branch=main?branch=main
 
-http://localhost:5555/v1.24/tasks
-
-[{"ID":"6qgb0pna6iphr7c4ijzuiihaa","Version":{"Index":17},"CreatedAt":"2020-05-31T06:21:21.9356773Z","UpdatedAt":"2020-05-31T06:21:30.2943931Z","Labels":{},"Spec":{"ContainerSpec":{"Image":"redis:3.0.6@sha256:6a692a76c2081888b589e26e6ec835743119fe453d67ecf03df7de5b73d69842","Init":false,"DNSConfig":{},"Isolation":"default"},"Resources":{"Limits":{},"Reservations":{}},"Placement":{"Platforms":[{"Architecture":"amd64","OS":"linux"}]},"ForceUpdate":0},"ServiceID":"iws2t1vxpyb6khuq6n5ygn2xf","Slot":1,"NodeID":"9opfw0jjrrkehjh5mjo34ov36","Status":{"Timestamp":"2020-05-31T06:21:30.271778552Z","State":"running","Message":"started","ContainerStatus":{"ContainerID":"3142cca77641d75d4c5629e6cf4c6503a19e65cd791e67e725f2ecfdb7a872ce","PID":9610,"ExitCode":0},"PortStatus":{}},"DesiredState":"running"}]
-
-http://localhost:5555/v1.24/volumes
-
-{"Volumes":[{"CreatedAt":"2020-05-31T06:21:30Z","Driver":"local","Labels":null,"Mountpoint":"/var/lib/docker/volumes/23ae51a5bbd4e5237fb4d5c57ebbb3175fe571b19300eaf171a24e3fa7b587aa/_data","Name":"23ae51a5bbd4e5237fb4d5c57ebbb3175fe571b19300eaf171a24e3fa7b587aa","Options":null,"Scope":"local"},{"CreatedAt":"2020-05-31T06:22:09Z","Driver":"local","Labels":null,"Mountpoint":"/var/lib/docker/volumes/8d0bb8b4c6459477491c0d0947246240bf570a8989d043a952d079c0936397fb/_data","Name":"8d0bb8b4c6459477491c0d0947246240bf570a8989d043a952d079c0936397fb","Options":null,"Scope":"local"}],"Warnings":null}
-
-http://localhost:5555/v1.24/networks
-
-[{"Name":"ingress","Id":"d4a14ksm3py8bcc1lvz27vnkc","Created":"2020-05-31T06:20:10.868891918Z","Scope":"swarm","Driver":"overlay","EnableIPv6":false,"IPAM":{"Driver":"default","Options":null,"Config":[{"Subnet":"10.0.0.0/24","Gateway":"10.0.0.1"}]},"Internal":false,"Attachable":false,"Ingress":true,"ConfigFrom":{"Network":""},"ConfigOnly":false,"Containers":null,"Options":{"com.docker.network.driver.overlay.vxlanid_list":"4096"},"Labels":null},{"Name":"docker_gwbridge","Id":"91fe4a50fce33ed251b3c4f724bcd1157ad11f6719a294439fd383b0d4d0283c","Created":"2020-05-31T06:20:12.429548119Z","Scope":"local","Driver":"bridge","EnableIPv6":false,"IPAM":{"Driver":"default","Options":null,"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]},"Internal":false,"Attachable":false,"Ingress":false,"ConfigFrom":{"Network":""},"ConfigOnly":false,"Containers":{"ingress-sbox":{"Name":"gateway_ingress-sbox","EndpointID":"d58a3742d0bc1980b75e7faa2a30ba69aaf426b93354d5ad6d184f81104ecb5a","MacAddress":"02:42:ac:13:00:02","IPv4Address":"172.19.0.2/16","IPv6Address":""}},"Options":{"com.docker.network.bridge.enable_icc":"false","com.docker.network.bridge.enable_ip_masquerade":"true","com.docker.network.bridge.name":"docker_gwbridge"},"Labels":{}},{"Name":"bridge","Id":"1c38bcc4cd8e861058deae9a0fdf98b73d53fb33b92e6af7a49131fd40787108","Created":"2020-05-31T06:14:15.919812507Z","Scope":"local","Driver":"bridge","EnableIPv6":false,"IPAM":{"Driver":"default","Options":null,"Config":[{"Subnet":"172.17.0.0/16","Gateway":"172.17.0.1"}]},"Internal":false,"Attachable":false,"Ingress":false,"ConfigFrom":{"Network":""},"ConfigOnly":false,"Containers":{"3142cca77641d75d4c5629e6cf4c6503a19e65cd791e67e725f2ecfdb7a872ce":{"Name":"redis.1.6qgb0pna6iphr7c4ijzuiihaa","EndpointID":"823985f3185ed8f5530bfb739d80b1a70e6ef6589488101d7390801323973097","MacAddress":"02:42:ac:11:00:02","IPv4Address":"172.17.0.2/16","IPv6Address":""}},"Options":{"com.docker.network.bridge.default_bridge":"true","com.docker.network.bridge.enable_icc":"true","com.docker.network.bridge.enable_ip_masquerade":"true","com.docker.network.bridge.host_binding_ipv4":"0.0.0.0","com.docker.network.bridge.name":"docker0","com.docker.network.driver.mtu":"1500"},"Labels":{}},{"Name":"none","Id":"89f233338b7555961c86bb0800eac0beeeac1ba27369ce1f426972525f2621be","Created":"2020-05-20T13:01:10.594788222Z","Scope":"local","Driver":"null","EnableIPv6":false,"IPAM":{"Driver":"default","Options":null,"Config":[]},"Internal":false,"Attachable":false,"Ingress":false,"ConfigFrom":{"Network":""},"ConfigOnly":false,"Containers":{},"Options":{},"Labels":{}},{"Name":"host","Id":"b29011dbd9b37a0d1722fb3f2d9f81ba28cdb6314a33d285f6b2a56ce025122e","Created":"2020-05-20T13:01:10.606717346Z","Scope":"local","Driver":"host","EnableIPv6":false,"IPAM":{"Driver":"default","Options":null,"Config":[]},"Internal":false,"Attachable":false,"Ingress":false,"ConfigFrom":{"Network":""},"ConfigOnly":false,"Containers":{},"Options":{},"Labels":{}},{"Name":"my-bridge-network","Id":"f24bc896ba9f0611d1791200b4b498e8c40b27bd6d6518c80003eab9064d3d8b","Created":"2020-05-31T06:17:57.756597152Z","Scope":"local","Driver":"bridge","EnableIPv6":false,"IPAM":{"Driver":"default","Options":{},"Config":[{"Subnet":"172.18.0.0/16","Gateway":"172.18.0.1"}]},"Internal":false,"Attachable":false,"Ingress":false,"ConfigFrom":{"Network":""},"ConfigOnly":false,"Containers":{},"Options":{},"Labels":{}}]
-
-http://localhost:5555/v1.24/nodes
-
-[{"ID":"9opfw0jjrrkehjh5mjo34ov36","Version":{"Index":9},"CreatedAt":"2020-05-31T06:20:10.868734481Z","UpdatedAt":"2020-05-31T06:20:11.476494206Z","Spec":{"Labels":{},"Role":"manager","Availability":"active"},"Description":{"Hostname":"ip-172-31-4-164","Platform":{"Architecture":"x86_64","OS":"linux"},"Resources":{"NanoCPUs":2000000000,"MemoryBytes":480374784},"Engine":{"EngineVersion":"19.03.9","Plugins":[{"Type":"Log","Name":"awslogs"},{"Type":"Log","Name":"fluentd"},{"Type":"Log","Name":"gcplogs"},{"Type":"Log","Name":"gelf"},{"Type":"Log","Name":"journald"},{"Type":"Log","Name":"json-file"},{"Type":"Log","Name":"local"},{"Type":"Log","Name":"logentries"},{"Type":"Log","Name":"splunk"},{"Type":"Log","Name":"syslog"},{"Type":"Network","Name":"bridge"},{"Type":"Network","Name":"host"},{"Type":"Network","Name":"ipvlan"},{"Type":"Network","Name":"macvlan"},{"Type":"Network","Name":"null"},{"Type":"Network","Name":"overlay"},{"Type":"Volume","Name":"local"}]},"TLSInfo":{"TrustRoot":"-----BEGIN CERTIFICATE-----\nMIIBaTCCARCgAwIBAgIUXoMMj1D5FvbEnIaRpX3GWgZps4EwCgYIKoZIzj0EAwIw\nEzERMA8GA1UEAxMIc3dhcm0tY2EwHhcNMjAwNTMxMDYxNTAwWhcNNDAwNTI2MDYx\nNTAwWjATMREwDwYDVQQDEwhzd2FybS1jYTBZMBMGByqGSM49AgEGCCqGSM49AwEH\nA0IABIkizbGFaTWsbfCnRSD4vK1geAHGNZOM6wtuHssyuBUuem4qi1pAnAMUTwsk\nklbteOoIgd3gS+Ve3KYuKGhf41ijQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMB\nAf8EBTADAQH/MB0GA1UdDgQWBBRw3AMHF1GzCjNdBoISIfrdTbGsCzAKBggqhkjO\nPQQDAgNHADBEAiBTQ7ZX+WxE9Khq8oBNv4KobXLdBkWN7Slsa9WaUcu3DAIgd8cc\nl4f9aW+LZM9O7fipDNckH17jnuPc0TyJ3okFIuc=\n-----END CERTIFICATE-----\n","CertIssuerSubject":"MBMxETAPBgNVBAMTCHN3YXJtLWNh","CertIssuerPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEiSLNsYVpNaxt8KdFIPi8rWB4AcY1k4zrC24eyzK4FS56biqLWkCcAxRPCySSVu146giB3eBL5V7cpi4oaF/jWA=="}},"Status":{"State":"ready","Addr":"172.31.4.164"},"ManagerStatus":{"Leader":true,"Reachability":"reachable","Addr":"172.31.4.164:2377"}}]
-
-http://localhost:5555/v1.24/containers/3142cca77641d75d4c5629e6cf4c6503a19e65cd791e67e725f2ecfdb7a872ce/top
-
-{"Processes":[["999","9610","9580","0","06:21","?","00:00:06","redis-server *:6379"]],"Titles":["UID","PID","PPID","C","STIME","TTY","TIME","CMD"]}
-
-https://docs.docker.com/engine/api/v1.21/
-
-
+{
+"total_count": 1,
+"jobs": [
+{
+"id": 1004646359,
+"run_id": 215712255,
+"run_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/runs/215712255",
+"node_id": "MDg6Q2hlY2tSdW4xMDA0NjQ2MzU5",
+"head_sha": "78d0d92bee17e59f75d229d83a568e9b0e45fea1",
+"url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/actions/jobs/1004646359",
+"html_url": "https://github.com/prash897/hygieia-workflow-github-collector/runs/1004646359",
+"status": "completed",
+"conclusion": "success",
+"started_at": "2020-08-19T19:39:58Z",
+"completed_at": "2020-08-19T19:40:01Z",
+"name": "build",
+"steps": [
+{
+"name": "Set up job",
+"status": "completed",
+"conclusion": "success",
+"number": 1,
+"started_at": "2020-08-19T19:39:58.000Z",
+"completed_at": "2020-08-19T19:39:59.000Z"
+},
+{
+"name": "Run actions/checkout@v2",
+"status": "completed",
+"conclusion": "success",
+"number": 2,
+"started_at": "2020-08-19T19:39:59.000Z",
+"completed_at": "2020-08-19T19:40:01.000Z"
+},
+{
+"name": "Run a one-line script",
+"status": "completed",
+"conclusion": "success",
+"number": 3,
+"started_at": "2020-08-19T19:40:01.000Z",
+"completed_at": "2020-08-19T19:40:01.000Z"
+},
+{
+"name": "Run a multi-line script",
+"status": "completed",
+"conclusion": "success",
+"number": 4,
+"started_at": "2020-08-19T19:40:01.000Z",
+"completed_at": "2020-08-19T19:40:01.000Z"
+},
+{
+"name": "Post Run actions/checkout@v2",
+"status": "completed",
+"conclusion": "success",
+"number": 8,
+"started_at": "2020-08-19T19:40:01.000Z",
+"completed_at": "2020-08-19T19:40:01.000Z"
+},
+{
+"name": "Complete job",
+"status": "completed",
+"conclusion": "success",
+"number": 9,
+"started_at": "2020-08-19T19:40:01.000Z",
+"completed_at": "2020-08-19T19:40:01.000Z"
+}
+],
+"check_run_url": "https://api.github.com/repos/prash897/hygieia-workflow-github-collector/check-runs/1004646359"
+}
+]
+}
