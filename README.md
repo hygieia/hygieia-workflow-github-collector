@@ -12,17 +12,21 @@ A collector to showcase the GitHub Workflow details
 </ul> 
 
 <h3>How are Workflows Organized?</h3>
+<ul>
   Each GitHub repository can contain multiple workflows
-    There can be one or more "run" associated with each workflow
-      There can be one or more "job" associated with each run
-        There can be one or more "step" associated with each job    
+  There can be one or more "run" associated with each workflow
+  There can be one or more "job" associated with each run
+  There can be one or more "step" within each job
+</ul>
 
 <h3>Technical Description</h3>
-  The Classes and the description
+  The Classes and their description
+<ul>
   WorkflowController: Exposes APIs for UI to get the Component Data
   WorkflowCollectorTask : As with the framework , implementing Collector Task to regularly collect the workflow details and feed into the MongoDb
   WorkflowServiceImpl: To populate the componentData model and send back to UI
   Workflow*Repository: Provides CRUD operations to elements in the MongoDb
+</ul>
 
 <h3>APIs Supporting Workflow Collector</h3>
 
