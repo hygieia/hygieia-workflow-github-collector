@@ -87,7 +87,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     public Collector getCollector() {
         Collector protoType = new Collector();
         protoType.setName("GitHubWorkflow");
-        protoType.setCollectorType(CollectorType.GITWORKFLOW);
+        protoType.setCollectorType(CollectorType.GitWorkflow);
         protoType.setOnline(true);
         protoType.setEnabled(true);
 
