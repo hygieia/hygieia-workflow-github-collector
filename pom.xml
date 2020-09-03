@@ -33,7 +33,7 @@
     <snapshotRepository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
+    </snapshotRepository>	
     <repository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
@@ -48,7 +48,7 @@
   <properties>
     <apache.rat.plugin.version>0.13</apache.rat.plugin.version>
     <bc.version>3.0.1</bc.version>
-    <com.capitalone.dashboard.core.version>3.7.19</com.capitalone.dashboard.core.version>
+    <com.capitalone.dashboard.core.version>3.7.19-SNAPSHOT</com.capitalone.dashboard.core.version>
     <commons.io.version>2.4</commons.io.version>
     <commons.lang.version>3.8.1</commons.lang.version>
     <coveralls.maven.plugin.version>4.3.0</coveralls.maven.plugin.version>
@@ -120,6 +120,14 @@
       <artifactId>core</artifactId>
       <version>${com.capitalone.dashboard.core.version}</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>2.5</version>
+    <scope>test</scope>
+</dependency>
+    
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -150,6 +158,7 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    
     <dependency>
       <groupId>org.tmatesoft.svnkit</groupId>
       <artifactId>svnkit</artifactId>
@@ -247,7 +256,7 @@
           <skip>${japicmp.skip}</skip>
         </configuration>
       </plugin>
-      <plugin>
+      <!--  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${maven.checkstyle.plugin.version}</version>
@@ -268,7 +277,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>

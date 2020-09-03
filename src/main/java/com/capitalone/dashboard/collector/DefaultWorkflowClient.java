@@ -10,14 +10,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
+import org.bson.types.ObjectId;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -32,11 +31,12 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Commit;
-import com.capitalone.dashboard.model.CommitType;
-import com.capitalone.dashboard.model.GitHub;
 import com.capitalone.dashboard.model.GitHubParsed;
-import com.capitalone.dashboard.model.Workflow;
+import com.capitalone.dashboard.model.GitWorkflow;
+import com.capitalone.dashboard.model.GitWorkflowRepo;
+import com.capitalone.dashboard.model.GitWorkflowRun;
+import com.capitalone.dashboard.model.GitWorkflowRunJob;
+import com.capitalone.dashboard.model.GitWorkflowRunJobStep;
 import com.capitalone.dashboard.util.Encryption;
 import com.capitalone.dashboard.util.EncryptionException;
 import com.capitalone.dashboard.util.Supplier;
@@ -47,74 +47,96 @@ import com.capitalone.dashboard.util.Supplier;
  */
 
 @Component
-public class DefaultGitHubClient implements GitHubClient {
-    private static final Log LOG = LogFactory.getLog(DefaultGitHubClient.class);
+public class DefaultWorkflowClient implements WorkflowClient {
+    private static final Log LOG = LogFactory.getLog(DefaultWorkflowClient.class);
 
-    private final GitHubSettings settings;
+    private final GitWorkflowSettings settings;
 
     private final RestOperations restOperations;	
 
     private static final int FIRST_RUN_HISTORY_DEFAULT = 14;
 
     @Autowired
-    public DefaultGitHubClient(GitHubSettings settings,
+    public DefaultWorkflowClient(GitWorkflowSettings settings,
                                Supplier<RestOperations> restOperationsSupplier) {
         this.settings = settings;
         this.restOperations = restOperationsSupplier.get();
     }
-
-	@Override
-	public List<Workflow> getWorkflow(GitHub repo, boolean firstRun, List<Pattern> commitExclusionPatterns)
-			throws MalformedURLException, HygieiaException {
-		// TODO Auto-generated method stub
-
-        List<Workflow> worflows = new ArrayList<>();
-
-        // format URL
-        String repoUrl = (String) repo.getOptions().get("url");
-        GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
-        String apiUrl = gitHubParsed.getApiUrl();
-        // To Do change the url: workflow
-        String queryUrl = apiUrl.concat("/commits?sha=" + repo.getBranch()
-                + "&since=" + getTimeForApi(getRunDate(repo, firstRun)));
-        String decryptedPassword =      repo.getPassword();// Decryting is not required decryptString(repo.getPassword(), settings.getKey());
-        String personalAccessToken = (String) repo.getPersonalAccessToken();
-        String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
-        boolean lastPage = false;
-        String queryUrlPage = queryUrl;
-        while (!lastPage) {
-            LOG.info("Executing " + queryUrlPage);
-            ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
-           
-            
-            
-            
-            
-        }
-        return worflows;
-	}
+    
     /**
-     * Gets commits for a given repo
+     * Gets workflows for a given repo
      * @param repo
-     * @param firstRun
-     * @return list of commits
+     * @return list of workflows
      * @throws RestClientException
      * @throws MalformedURLException
      * @throws HygieiaException
      */
-    @Override
-    public List<Commit> getCommits(GitHub repo, boolean firstRun, List<Pattern> commitExclusionPatterns) throws RestClientException, MalformedURLException, HygieiaException {
+	@Override
+	public List<GitWorkflow> getGitWorkflows(GitWorkflowRepo repo) throws MalformedURLException, HygieiaException {
 
-        List<Commit> commits = new ArrayList<>();
+        List<GitWorkflow> workflows = new ArrayList<>();
+        int page=1;
+        int perPage=100;
 
         // format URL
         String repoUrl = (String) repo.getOptions().get("url");
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
         String apiUrl = gitHubParsed.getApiUrl();
+        // To Do check changes the url: workflowRuns
+        String queryUrl = apiUrl.concat("/actions/workflows" +
+        		"?branch=" + repo.getBranch());
+        String decryptedPassword = repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
+        String personalAccessToken = (String) repo.getPersonalAccessToken();
+        String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
+        boolean lastPage = false;
+        String queryUrlPage = queryUrl;
+            LOG.info("Executing " + queryUrlPage);
+            ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
+            JSONObject jsonObject = (JSONObject) parseAsObject(response);
+            JSONArray jsonArray = (JSONArray) jsonObject.get("workflows");
+            for (Object item : jsonArray) {
+                JSONObject itemObject = (JSONObject) item;
 
-        String queryUrl = apiUrl.concat("/commits?sha=" + repo.getBranch()
-                + "&since=" + getTimeForApi(getRunDate(repo, firstRun)));
-        String decryptedPassword =      repo.getPassword();//decryptString(repo.getPassword(), settings.getKey());
+            	String workflowId = str(itemObject, "id");
+                String name = str(itemObject, "name");
+                String state = str(itemObject, "state");
+                String created_at = str(itemObject, "created_at");
+                String updated_at = str(itemObject, "updated_at");
+                Boolean enabled = state.equals("active");
+ 
+                GitWorkflow workflow = new GitWorkflow(workflowId,name, state, created_at, updated_at);
+                workflow.setId(ObjectId.get());
+                workflows.add(workflow);
+  
+            }
+        return workflows;
+	}
+
+    /**
+     * Gets workflowRuns for a given repo & workflowId
+     * @param repo
+     * @param workflowId
+     * @return list of workflowRuns
+     * @throws RestClientException
+     * @throws MalformedURLException
+     * @throws HygieiaException
+     */
+	@Override
+	public List<GitWorkflowRun> getGitWorkflowRuns(GitWorkflowRepo repo, String pGitWorkflowId)
+			throws MalformedURLException, HygieiaException {
+
+        List<GitWorkflowRun> workflowRuns = new ArrayList<>();
+        int page=1;
+        int perPage=100;
+
+        // format URL
+        String repoUrl = (String) repo.getOptions().get("url");
+        GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
+        String apiUrl = gitHubParsed.getApiUrl();
+        // To Do check changes the url: workflowRuns
+        String queryUrl = apiUrl.concat("/actions/workflows/" + pGitWorkflowId + "/runs" +
+        		"?branch=" + repo.getBranch());
+        String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
         String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
         boolean lastPage = false;
@@ -122,42 +144,21 @@ public class DefaultGitHubClient implements GitHubClient {
         while (!lastPage) {
             LOG.info("Executing " + queryUrlPage);
             ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
-            JSONArray jsonArray = parseAsArray(response);
+            JSONObject runObject = parseAsObject(response);
+            JSONArray jsonArray = (JSONArray) runObject.get("workflow_runs");
             for (Object item : jsonArray) {
                 JSONObject jsonObject = (JSONObject) item;
-                String sha = str(jsonObject, "sha");
-                JSONObject commitObject = (JSONObject) jsonObject.get("commit");
-                JSONObject commitAuthorObject = (JSONObject) commitObject.get("author");
-                String message = str(commitObject, "message");
-                String author = str(commitAuthorObject, "name");
-                long timestamp = new DateTime(str(commitAuthorObject, "date"))
-                        .getMillis();
-                JSONObject authorObject = (JSONObject) jsonObject.get("author");
-                String authorLogin = "";
-                if (authorObject != null) {
-                    authorLogin = str(authorObject, "login");
-                }
-                JSONArray parents = (JSONArray) jsonObject.get("parents");
-                List<String> parentShas = new ArrayList<>();
-                if (parents != null) {
-                    for (Object parentObj : parents) {
-                        parentShas.add(str((JSONObject) parentObj, "sha"));
-                    }
-                }
 
-                Commit commit = new Commit();
-                commit.setTimestamp(System.currentTimeMillis());
-                commit.setScmUrl(repo.getRepoUrl());
-                commit.setScmBranch(repo.getBranch());
-                commit.setScmRevisionNumber(sha);
-                commit.setScmParentRevisionNumbers(parentShas);
-                commit.setScmAuthor(author);
-                commit.setScmAuthorLogin(authorLogin);
-                commit.setScmCommitLog(message);
-                commit.setScmCommitTimestamp(timestamp);
-                commit.setNumberOfChanges(1);
-                commit.setType(getCommitType(CollectionUtils.size(parents), message, commitExclusionPatterns));
-                commits.add(commit);
+            	String workflowId = str(jsonObject, "workflow_id");
+                String runId = str(jsonObject, "id");
+                String status = str(jsonObject, "status");
+                String conclusion = str(jsonObject, "conclusion");
+ 
+                GitWorkflowRun workflowRun = new GitWorkflowRun(workflowId,
+                		runId, status, conclusion);
+                workflowRun.setId(ObjectId.get());
+                workflowRuns.add(workflowRun);
+  
             }
             if (CollectionUtils.isEmpty(jsonArray)) {
                 lastPage = true;
@@ -170,21 +171,79 @@ public class DefaultGitHubClient implements GitHubClient {
                 }
             }
         }
-        return commits;
-    }
+        return workflowRuns;
+	}
 
-    private CommitType getCommitType(int parentSize, String commitMessage, List<Pattern> commitExclusionPatterns) {
-        if (parentSize > 1) return CommitType.Merge;
-        if (settings.getNotBuiltCommits() == null) return CommitType.New;
-        if (!CollectionUtils.isEmpty(commitExclusionPatterns)) {
-            for (Pattern pattern : commitExclusionPatterns) {
-                if (pattern.matcher(commitMessage).matches()) {
-                    return CommitType.NotBuilt;
+    /**
+     * Gets workflowRunJobs for a given repo & workflowRunId
+     * @param repo
+     * @param workflowId
+     * @param workflowRunId
+     * @return list of workflowRunJobs
+     * @throws RestClientException
+     * @throws MalformedURLException
+     * @throws HygieiaException
+     */
+	@Override
+	public List<GitWorkflowRunJob> getGitWorkflowRunJobs(GitWorkflowRepo repo, String pGitWorkflowId, String pGitWorkflowRunId)
+			throws MalformedURLException, HygieiaException {
+        List<GitWorkflowRunJob> workflowRunJobs = new ArrayList<>();
+        List<GitWorkflowRunJobStep> workflowRunJobSteps = new ArrayList<>();
+        int page=1;
+        int perPage=100;
+
+        // format URL
+        String repoUrl = (String) repo.getOptions().get("url");
+        GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
+        String apiUrl = gitHubParsed.getApiUrl();
+        // To Do check changes the url: workflowRuns
+        String queryUrl = apiUrl.concat("/actions/runs/" + pGitWorkflowRunId + "/jobs");
+        String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
+        String personalAccessToken = (String) repo.getPersonalAccessToken();
+        String decryptedPersonalAccessToken = personalAccessToken;//decryptString(personalAccessToken, settings.getKey());
+        boolean lastPage = false;
+        String queryUrlPage = queryUrl;
+            LOG.info("Executing " + queryUrlPage);
+            ResponseEntity<String> response = makeRestCall(queryUrlPage, repo.getUserId(), decryptedPassword,decryptedPersonalAccessToken);
+            JSONObject runObject = parseAsObject(response);
+            JSONArray jsonArray = (JSONArray) runObject.get("jobs");
+            for (Object item : jsonArray) {
+                JSONObject jsonObject = (JSONObject) item;
+                String jobId = str(jsonObject, "id");
+                String runId = str(jsonObject, "run_id");
+                String status = str(jsonObject, "status");
+                String conclusion = str(jsonObject, "conclusion");
+                String started_at = str(jsonObject,"started_at");
+                String completed_at = str(jsonObject,"completed_at");
+                String name = str(jsonObject,"name");
+ 
+                GitWorkflowRunJob workflowRunJob = new GitWorkflowRunJob(pGitWorkflowId,
+                		runId, jobId, status, conclusion, started_at, completed_at, name);
+                
+                workflowRunJobSteps = new ArrayList<GitWorkflowRunJobStep>();
+                JSONArray stepArray = (JSONArray) jsonObject.get("steps");
+                for (Object step : stepArray) {
+                	JSONObject stepObject = (JSONObject) step;
+                	String stepNumber = str(stepObject,"number");
+                	status = str(stepObject,"status");
+                	conclusion = str(stepObject,"conclusion");
+                    started_at = str(stepObject,"started_at");
+                    completed_at = str(stepObject,"completed_at");
+                    name = str(stepObject,"name");
+                    
+                    GitWorkflowRunJobStep workflowRunJobStep = new GitWorkflowRunJobStep(pGitWorkflowId,
+                    		runId, jobId, stepNumber, status, conclusion, started_at,
+                    		completed_at, name);
+                    workflowRunJobStep.setId(ObjectId.get());
+                    workflowRunJobSteps.add(workflowRunJobStep);
                 }
+                
+                workflowRunJob.setWorkflowRunJobSteps(workflowRunJobSteps);
+                workflowRunJobs.add(workflowRunJob);
+  
             }
-        }
-        return CommitType.New;
-    }
+        return workflowRunJobs;
+	}
 
 
 
@@ -331,7 +390,7 @@ public class DefaultGitHubClient implements GitHubClient {
      * @param firstRun
      * @return
      */
-    private Date getRunDate(GitHub repo, boolean firstRun) {
+    private Date getRunDate(GitWorkflowRepo repo, boolean firstRun) {
         if (firstRun) {
             int firstRunDaysHistory = settings.getFirstRunHistoryDays();
             if (firstRunDaysHistory > 0) {

@@ -11,7 +11,7 @@ import java.util.List;
  */
 @Component
 @ConfigurationProperties(prefix = "github")
-public class GitHubSettings {
+public class GitWorkflowSettings {
     private String proxy;
     private String proxyPort;
     private String proxyUser;

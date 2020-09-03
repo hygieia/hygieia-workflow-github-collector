@@ -6,8 +6,7 @@ import java.util.regex.Pattern;
 
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Commit;
-import com.capitalone.dashboard.model.GitHub;
-import com.capitalone.dashboard.model.Workflow;
+import com.capitalone.dashboard.model.GitWorkflowRepo;
 
 /**
  * Client for fetching commit history from GitHub
@@ -15,9 +14,9 @@ import com.capitalone.dashboard.model.Workflow;
 public interface GitHubClient {
 
 
-	List<Commit> getCommits(GitHub repo, boolean firstRun, List<Pattern> commitExclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<Commit> getCommits(GitWorkflowRepo repo, boolean firstRun, List<Pattern> commitExclusionPatterns) throws MalformedURLException, HygieiaException;
 
-	List<Workflow> getWorkflow(GitHub repo, boolean firstRun, List<Pattern> commitExclusionPatterns) throws MalformedURLException, HygieiaException;
+	List<GitWorkflowRepo> getWorkflow(GitWorkflowRepo repo, boolean firstRun, List<Pattern> commitExclusionPatterns) throws MalformedURLException, HygieiaException;
 	
    
 }
