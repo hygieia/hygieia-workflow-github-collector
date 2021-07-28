@@ -23,9 +23,9 @@ public class GitHubSettings {
 	@Value("${github.firstRunHistoryDays:14}")
     private int firstRunHistoryDays;
     private List<String> notBuiltCommits;
-	@Value("${github.errorThreshold:20}")
+	@Value("${github.errorThreshold:2}")
     private int errorThreshold;
-	@Value("${github.rateLimitThreshold:1011}")
+	@Value("${github.rateLimitThreshold:10}")
 	private int rateLimitThreshold;
 	private String personalAccessToken; 
 
