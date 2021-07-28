@@ -13,7 +13,8 @@ public class WorkflowRunTest {
 	private String conclusion = "success";
 	private String createdAt = "17/08/1956 12:01";
 	private String updatedAt = "17/08/2020 12:01";
-
+	private String url="";
+	
 	private String workflowId2 = "8675310";
 	private String runId2 = "002";
 	private String event2 = "build2";
@@ -21,7 +22,7 @@ public class WorkflowRunTest {
 	private String conclusion2 = "neutral";
 	private String createdAt2 = "14/08/2020 12:01";
 	private String updatedAt2 = "14/08/2020 14:01";
-
+	private String url2="";
 	@Test
 	public void testConstructor1() {
 		WorkflowRun wfr = new WorkflowRun(workflowId, runId, status, conclusion);
@@ -35,7 +36,7 @@ public class WorkflowRunTest {
 
 	@Test
 	public void testConstructor2WithSetters() {
-		WorkflowRun wfr = new WorkflowRun(workflowId, runId, status, conclusion, event, createdAt, updatedAt);
+		WorkflowRun wfr = new WorkflowRun(workflowId, runId, status, conclusion, event, createdAt, updatedAt,url,null);
 		assertEquals(workflowId,wfr.getWorkflowId());
 		assertEquals(runId,wfr.getRunId());
 		assertEquals(status,wfr.getStatus());
@@ -51,6 +52,7 @@ public class WorkflowRunTest {
 		wfr.setEvent(event2);
 		wfr.setCreatedAt(createdAt2);
 		wfr.setUpdatedAt(updatedAt2);
+		wfr.setBuildUrl(url2);
 		assertEquals(workflowId2,wfr.getWorkflowId());
 		assertEquals(runId2,wfr.getRunId());
 		assertEquals(status2,wfr.getStatus());

@@ -1,12 +1,10 @@
 package com.capitalone.dashboard.model;
 
-import java.util.List;
-
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "github_workflow")
-public class Workflow extends CollectorItem{
+public class Workflow extends BaseModel{
 	@Indexed(unique = true)
 	private String workflowId;
 	private String name;
@@ -14,22 +12,23 @@ public class Workflow extends CollectorItem{
 	private String createdAt;
 	private String updatedAt;
 	private Boolean enabled;
+	private String gitRepo;
+	private String gitBranch;
+	public Workflow()
+	{
 		
-	public Workflow(String workflowId, String name, String state, Boolean enabled) {
-		this.workflowId = workflowId;
-		this.name = name;
-		this.state = state;
-		this.enabled = enabled;
 	}
 	
 	public Workflow(String workflowId, String name, String state, Boolean enabled,
-			String createdAt, String updatedAt) {
+			String createdAt, String updatedAt,String gitRepo,String gitBranch) {
 		this.workflowId = workflowId;
 		this.name = name;
 		this.state = state;
 		this.enabled = enabled;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.gitRepo =  gitRepo;
+		this.gitBranch =  gitBranch;
 	}
 
 	public String getWorkflowId() {
@@ -77,6 +76,18 @@ public class Workflow extends CollectorItem{
 
 	public void setUpdatedAt(String updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+	public String getGitRepo() {
+		return gitRepo;
+	}
+	public void setGitRepo(String gitRepo) {
+		this.gitRepo = gitRepo;
+	}
+	public String getGitBranch() {
+		return gitBranch;
+	}
+	public void setGitBranch(String gitBranch) {
+		this.gitBranch = gitBranch;
 	}
 		
 }

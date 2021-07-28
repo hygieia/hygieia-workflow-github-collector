@@ -37,9 +37,9 @@ public class WorkflowCollectorTaskTest {
 
 	@Mock private ComponentRepository dbComponentRepository;
 	@Mock private GitHubRepository gitHubRepository;
-	@Mock private WorkflowRepository<Workflow> workflowRepository;
-	@Mock private WorkflowRunRepository<WorkflowRun> workflowRunRepository;
-	@Mock private WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
+	@Mock private WorkflowRepository workflowRepository;
+	@Mock private WorkflowRunRepository workflowRunRepository;
+	@Mock private WorkflowRunJobRepository workflowRunJobRepository;
 	@Mock private GitHub repo1;
     @Mock private GitHub repo2;
     @Mock private WorkflowClient workflowClient;
@@ -61,7 +61,7 @@ public class WorkflowCollectorTaskTest {
         collector.setEnabled(true);
         collector.setName("collector");
         collector.setId(new ObjectId("111ca42a258ad365fbb64ecc"));
-
+        collector.setCollectorType(CollectorType.SCM);
         when(gitHubRepository.findEnabledGitHubRepos(collector.getId())).thenReturn(getEnabledRepos());
        
         when(gitHubSettings.getErrorThreshold()).thenReturn(1);
@@ -69,7 +69,7 @@ public class WorkflowCollectorTaskTest {
         when(workflowClient.getWorkflows(getRepo1())).thenReturn(getWorkflows());
         
         when(workflowRepository.findEnabledWorkflows(Boolean.TRUE)).thenReturn(getEnabledWorkflows());
-        when(workflowRepository.exists(anyString())).thenReturn(true);
+       // when(workflowRepository.exists(anyString())).thenReturn(true);
         
         when(workflowClient.getWorkflowRuns(getRepo1(), "8675309")).thenReturn(getWorkflowRuns());
         
@@ -148,29 +148,29 @@ public class WorkflowCollectorTaskTest {
 	
 	private List<Workflow> getWorkflows() {
 		ArrayList<Workflow> wfs = new ArrayList<Workflow>();
-		Workflow wf1 = new Workflow("8675309","wf1","active",true,"created_at","updated_at");
+		Workflow wf1 = new Workflow("8675309","wf1","active",true,"created_at","updated_at","repo","branch");
 		wfs.add(wf1);
-		Workflow wf2 = new Workflow("8675310","wf2","active",true,"created_at","updated_at");
+		Workflow wf2 = new Workflow("8675310","wf2","active",true,"created_at","updated_at","repo","branch");
 		wfs.add(wf2);
-		Workflow wf3 = new Workflow("8675311","wf3","inactive",false,"created_at","updated_at");
+		Workflow wf3 = new Workflow("8675311","wf3","inactive",false,"created_at","updated_at","repo","branch");
 		wfs.add(wf3);
 		return wfs;
 	}
 	
 	private List<Workflow> getEnabledWorkflows() {
 		ArrayList<Workflow> wfs = new ArrayList<Workflow>();
-		Workflow wf1 = new Workflow("8675309","wf1","active",true,"created_at","updated_at");
+		Workflow wf1 = new Workflow("8675309","wf1","active",true,"created_at","updated_at","repo","branch");
 		wfs.add(wf1);
-		Workflow wf2 = new Workflow("8675310","wf2","active",true,"created_at","updated_at");
+		Workflow wf2 = new Workflow("8675310","wf2","active",true,"created_at","updated_at","repo","branch");
 		wfs.add(wf2);
 		return wfs;
 	}
 	
 	private List<WorkflowRun> getWorkflowRuns() {
 		ArrayList<WorkflowRun> wfrs = new ArrayList<WorkflowRun>();
-		WorkflowRun wfr1 = new WorkflowRun("8675309","001","completed","success","build","created_at","updated_at");
+		WorkflowRun wfr1 = new WorkflowRun("8675309","001","completed","success","build","created_at","updated_at","url",null);
 		wfrs.add(wfr1);
-		WorkflowRun wfr2 = new WorkflowRun("8675309","002","queued","neutral","build","created_at","updated_at");
+		WorkflowRun wfr2 = new WorkflowRun("8675309","002","queued","neutral","build","created_at","updated_at","url",null);
 		wfrs.add(wfr2);
 		return wfrs;
 	}

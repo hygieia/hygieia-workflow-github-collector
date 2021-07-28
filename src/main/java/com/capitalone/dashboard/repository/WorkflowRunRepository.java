@@ -9,12 +9,15 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.capitalone.dashboard.model.WorkflowRun;
 
-public interface WorkflowRunRepository<T extends WorkflowRun> extends CrudRepository<T, ObjectId> {
+public interface WorkflowRunRepository extends CrudRepository<WorkflowRun, ObjectId> {
 
 	@Query(value = "{'runId': ?0}")
 	public WorkflowRun findByRunId(String runId);
 
 	@Query(value = "{'workflowId': ?0}")
 	public List<WorkflowRun> findByWorkflowId(String workflowId);
+	
+	@Query(value = "{'runId': ?0, workflowId': ?1}")
+	public WorkflowRun findByRunIdAndWorkflowId(String runId,String workflowId);
 
 }

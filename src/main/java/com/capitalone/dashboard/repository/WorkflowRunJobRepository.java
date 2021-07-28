@@ -9,7 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.capitalone.dashboard.model.WorkflowRunJob;
 
-public interface WorkflowRunJobRepository<T extends WorkflowRunJob> extends CrudRepository<T, ObjectId> {
+public interface WorkflowRunJobRepository extends CrudRepository<WorkflowRunJob, ObjectId> {
 
 	@Query(value = "{'jobId': ?0}")
 	public WorkflowRunJob findByJobId(String jobId);

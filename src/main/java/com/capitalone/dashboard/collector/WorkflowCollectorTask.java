@@ -36,6 +36,7 @@ import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
+import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.GitHubRepository;
 import com.capitalone.dashboard.repository.WorkflowRepository;
@@ -56,11 +57,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     private final ComponentRepository dbComponentRepository;
     private static final long FOURTEEN_DAYS_MILLISECONDS = 14 * 24 * 60 * 60 * 1000;
     private static final String API_RATE_LIMIT_MESSAGE = "API rate limit exceeded";
-    private WorkflowRepository<Workflow> workflowRepository;
-    private WorkflowRunRepository<WorkflowRun> workflowRunRepository;
-    private WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
+    private final WorkflowRepository workflowRepository;
+    private final WorkflowRunRepository workflowRunRepository;
+    private  final WorkflowRunJobRepository workflowRunJobRepository;
 
-    Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
+   
     
     @Autowired
     public WorkflowCollectorTask(TaskScheduler taskScheduler,
@@ -69,10 +70,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                                WorkflowClient workflowClient,
                                GitHubSettings gitHubSettings,
                                ComponentRepository dbComponentRepository,
-                               WorkflowRepository<Workflow> workflowRepository,
-                               WorkflowRunRepository<WorkflowRun> workflowRunRepository,
-                               WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository) {
-        super(taskScheduler, "GitHub");
+                              WorkflowRepository workflowRepository,
+                              WorkflowRunRepository workflowRunRepository,
+                               WorkflowRunJobRepository workflowRunJobRepository
+                               ) {
+        super(taskScheduler, "GitWorkflow");
         this.collectorRepository = collectorRepository;
         this.gitHubRepository = gitHubRepository;
         this.workflowClient = workflowClient;
@@ -86,7 +88,7 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     @Override
     public Collector getCollector() {
         Collector protoType = new Collector();
-        protoType.setName("GitHubWorkflow");
+        protoType.setName("GitWorkflow");
         protoType.setCollectorType(CollectorType.GitWorkflow);
         protoType.setOnline(true);
         protoType.setEnabled(true);
@@ -103,6 +105,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         uniqueOptions.put(GitHub.REPO_URL, "");
         uniqueOptions.put(GitHub.BRANCH, "");
         protoType.setUniqueFields(uniqueOptions);
+        
+        List<String> searchFields = new ArrayList<>();
+        searchFields.add(GitHub.REPO_URL);
+        searchFields.add(GitHub.BRANCH);
+        protoType.setSearchFields(searchFields);
         return protoType;
     }
 
@@ -164,10 +171,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
         long start = System.currentTimeMillis();
         int repoCount = 0;
     
-        //clean(collector);
+       // clean(collector);
         
         String proxyUrl = gitHubSettings.getProxy();
         String proxyPort = gitHubSettings.getProxyPort();
+        
         String proxyUser= gitHubSettings.getProxyUser();
         String proxyPassword= gitHubSettings.getProxyPassword();
         
@@ -184,8 +192,11 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
             System.setProperty("https.proxyPassword", proxyPassword);
          }
          }
-            
- 		for (GitHub repo : enabledRepos(collector)) {
+        LOG.info("Workflow step starting");
+        List<Collector> gitCollectors = collectorRepository.findByCollectorType(CollectorType.SCM);
+        //Predicate<Workflow> checkWorkFlowExist = workflow -> {return workflowRepository.findByWorkflowId(workflow.getWorkflowId());}
+        		//workflow -> {return workflowRepository.exists(workflow.getWorkflowId());};
+ 		for (GitHub repo : enabledRepos(gitCollectors.get(0))) { LOG.info("Workflow has entries to process");
             if (repo.getErrorCount() < gitHubSettings.getErrorThreshold()) {
                 boolean firstRun = ((repo.getLastUpdated() == 0) || ((start - repo.getLastUpdated()) > FOURTEEN_DAYS_MILLISECONDS));
                 repo.removeLastUpdateDate();  //moved last update date to collector item. This is to clean old data.
@@ -193,11 +204,23 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                     LOG.info(repo.getOptions().toString() + "::" + repo.getBranch() + ":: get workflows");
                     
                     // Step 1: Get all the Workflows and save if not exist
-                    workflowClient.getWorkflows(repo).parallelStream().filter(checkWorkFlowExist).
-                    forEach(workflow -> {
-                    	workflowRepository.save(workflow);
-                    });
-                  
+//                    workflowClient.getWorkflows(repo).parallelStream().filter(checkWorkFlowExist).
+//                    forEach(workflow -> {
+//                    	workflowRepository.save(workflow);
+//                    });
+                   
+                    List<Workflow> workflowsList= workflowClient.getWorkflows(repo);
+                    for(Workflow wfl :workflowsList)
+                    {
+                    	Workflow existingWfl =  workflowRepository.findByWorkflowId(wfl.getWorkflowId());
+                    	if(existingWfl==null)
+                    	{
+                    		workflowRepository.save(wfl);
+                    	}
+                    	
+                    }
+                   // workflowRepository.save(workflowsList);
+                 
                     List<Workflow> workflows = (List<Workflow>) workflowRepository.findEnabledWorkflows(Boolean.TRUE);
                     
                     // Step 2: Get all runs & jobs associated with each "enabled" (active) workflow
@@ -213,19 +236,26 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
                         for (WorkflowRun workflowRun : workflowRuns) {
                         	
                         	String runId = workflowRun.getRunId();
-                        	
                         	workflowRun.setWorkflowId(workflowId);
-                        	workflowRunRepository.save(workflowRun);
                         	
+                        	WorkflowRun existingWflRun =  workflowRunRepository.findByRunId(runId);
+                        	if(existingWflRun==null)
+                        	{
+                        		workflowRunRepository.save(workflowRun);
+                        	}
                         	List<WorkflowRunJob> workflowRunJobs;
 							try {
 								workflowRunJobs = workflowClient.getWorkflowRunJobs(repo, 
 										workflow.getWorkflowId(), workflowRun.getRunId());
                         	
 								for (WorkflowRunJob job : workflowRunJobs) {
+									WorkflowRunJob existingWrkFlowRunJob =  workflowRunJobRepository.findByJobId(job.getJobId());
 									job.setWorkflowId(workflowId);
 									job.setRunId(runId);
-									workflowRunJobRepository.save(job);
+									if(existingWrkFlowRunJob==null)
+									{
+										workflowRunJobRepository.save(job);
+									}
 								}
 			                } catch (RestClientException | MalformedURLException ex) {
 			                    LOG.error("Error fetching workflowRunJobs for:" + repo.getRepoUrl(), ex);
@@ -292,16 +322,28 @@ public class WorkflowCollectorTask extends CollectorTask<Collector> {
     }
 
     private List<GitHub> enabledRepos(Collector collector) {
-        List<GitHub> repos = (List<GitHub>) gitHubRepository.findEnabledGitHubRepos(collector.getId());
-
-        List<GitHub> pulledRepos 
+       List<GitHub> repos = (List<GitHub>) gitHubRepository.findEnabledGitHubRepos(collector.getId());
+       List<GitHub> pulledRepos 
                 =  (List<GitHub>) Optional.ofNullable(repos)
                 .orElseGet(Collections::emptyList).stream()
                 .filter(pulledRepo -> !pulledRepo.isPushed())
                 .collect(Collectors.toList());
 
-        if (CollectionUtils.isEmpty(pulledRepos)) { return new ArrayList<>(); }
-
+        if (CollectionUtils.isEmpty(pulledRepos)) {LOG.info("enabledRepos : null"); return new ArrayList<>(); }
+        LOG.info("enabledRepos : "+ pulledRepos.size());
         return pulledRepos;
+    }
+    private Boolean isExist(Workflow wfl)
+    {
+    	Boolean exist=false;
+    	 List<Workflow> existingWorkFlowList =  (List<Workflow>) workflowRepository.findAll();
+    	 for(Workflow existingWfl:existingWorkFlowList)
+    	 {
+    		 	if(existingWfl.getWorkflowId().equalsIgnoreCase(wfl.getWorkflowId()))
+    		 	{
+    		 		return true;
+    		 	}
+    	 }
+    	 return exist;
     }
 }

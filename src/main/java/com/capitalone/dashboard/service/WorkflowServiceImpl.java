@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
-import com.capitalone.dashboard.collector.GitHubSettings;
 import com.capitalone.dashboard.model.ComponentData;
 import com.capitalone.dashboard.model.Series;
 import com.capitalone.dashboard.model.Workflow;
@@ -23,23 +22,29 @@ import com.capitalone.dashboard.repository.WorkflowRunRepository;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
-	private static final Log LOG = LogFactory.getLog(WorkflowService.class);
+	private static final Log LOG = LogFactory.getLog(WorkflowServiceImpl.class);
+
+	
+	private final WorkflowRepository workflowRepository;
+	private final WorkflowRunRepository workflowRunRepository;
+	private final WorkflowRunJobRepository workflowRunJobRepository;
+	private final WorkflowCustomRepository workflowCustomRepository;
+//	private final GitHubSettings gitHubSettings;
 
 	@Autowired
-	WorkflowRepository<Workflow> workflowRepository;
+	public WorkflowServiceImpl(WorkflowRepository workflowRepository,
+							   WorkflowRunRepository workflowRunRepository,
+							   WorkflowRunJobRepository workflowRunJobRepository,
+							   WorkflowCustomRepository workflowCustomRepository
+							  // , GitHubSettings gitHubSettings
+							   ) {
+		this.workflowRepository = workflowRepository;
+		this.workflowRunRepository= workflowRunRepository;
+		this.workflowRunJobRepository=workflowRunJobRepository;
+		this.workflowCustomRepository=workflowCustomRepository;
+	//	this.gitHubSettings =gitHubSettings;
+	}
 	
-	@Autowired
-	WorkflowRunRepository<WorkflowRun> workflowRunRepository;
-	
-	@Autowired
-	WorkflowRunJobRepository<WorkflowRunJob> workflowRunJobRepository;
-	
-	@Autowired
-	WorkflowCustomRepository workflowCustomRepository;
-
-	@Autowired
-	GitHubSettings gitHubSettings;
-
 	private boolean isConfigSet() {
 		// return collectorItemRepository.findAll().iterator().hasNext();
 		return false;
@@ -47,7 +52,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 	@Override
 	public ComponentData getWorkflowMetaCount() {
-		// TODO Auto-generated method stub
 		CrudRepository[] obj = { workflowRepository, workflowRunRepository, workflowRunJobRepository };
 		String[] names = { "Workflow", "WorkflowRun", "WorkflowRunJob" };
 		int i = 0;
