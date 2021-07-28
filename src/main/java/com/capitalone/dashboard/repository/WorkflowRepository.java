@@ -8,9 +8,9 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.capitalone.dashboard.model.Workflow;
 
-public interface WorkflowRepository<T extends Workflow> extends CrudRepository<T, ObjectId> {
+public interface WorkflowRepository extends CrudRepository<Workflow, ObjectId> {
 
-	public boolean exists(String workflowId);
+	//public boolean exists(String workflowId);
 	
 	@Query(value = "{'enabled' : ?0}")
 	public List<Workflow> findEnabledWorkflows(Boolean enabled);

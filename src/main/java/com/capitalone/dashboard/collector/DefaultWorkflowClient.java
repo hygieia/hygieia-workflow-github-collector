@@ -36,6 +36,7 @@ import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitHub;
 import com.capitalone.dashboard.model.GitHubParsed;
+import com.capitalone.dashboard.model.SCM;
 import com.capitalone.dashboard.model.Workflow;
 import com.capitalone.dashboard.model.WorkflowRun;
 import com.capitalone.dashboard.model.WorkflowRunJob;
@@ -58,7 +59,9 @@ public class DefaultWorkflowClient implements WorkflowClient {
     private final RestOperations restOperations;	
 
     private static final int FIRST_RUN_HISTORY_DEFAULT = 14;
-
+    private static final String PUBLIC_GITHUB_BASE_API = "api.github.com/";
+    private static final String PUBLIC_GITHUB_REPO_HOST = "api.github.com/repos";
+    
     @Autowired
     public DefaultWorkflowClient(GitHubSettings settings,
                                Supplier<RestOperations> restOperationsSupplier) {
@@ -83,12 +86,15 @@ public class DefaultWorkflowClient implements WorkflowClient {
         int perPage=100;
 
         // format URL
-        String repoUrl = (String) repo.getOptions().get("url");
+        String repoUrl = (String) repo.getOptions().get(GitHub.REPO_URL);
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
         String apiUrl = gitHubParsed.getApiUrl();
+        String repoBranch = repo.getBranch();
+        if(repoBranch==null) { repoBranch="master";}
         // To Do check changes the url: workflowRuns
-        String queryUrl = apiUrl.concat("/actions/workflows/" +
-        		"?branch=" + repo.getBranch());
+        String queryUrl = apiUrl.concat("/actions/workflows");
+//        String queryUrl = apiUrl.concat("/actions/workflows/" +
+//        		"?branch=" + repoBranch);
 //        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
         String decryptedPassword = repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
@@ -103,15 +109,15 @@ public class DefaultWorkflowClient implements WorkflowClient {
             for (Object item : jsonArray) {
                 JSONObject itemObject = (JSONObject) item;
 
-            	String workflowId = str(jsonObject, "id");
-                String name = str(jsonObject, "name");
-                String state = str(jsonObject, "state");
-                String created_at = str(jsonObject, "created_at");
-                String updated_at = str(jsonObject, "updated_at");
+            	String workflowId = str(itemObject, "id");
+                String name = str(itemObject, "name");
+                String state = str(itemObject, "state");
+                String created_at = str(itemObject, "created_at");
+                String updated_at = str(itemObject, "updated_at");
                 Boolean enabled = state.equals("active");
  
                 Workflow workflow = new Workflow(workflowId,
-                		name,state,enabled,created_at,updated_at);
+                		name,state,enabled,created_at,updated_at,repoUrl,null);
                 workflows.add(workflow);
   
             }
@@ -145,14 +151,15 @@ public class DefaultWorkflowClient implements WorkflowClient {
         List<WorkflowRun> workflowRuns = new ArrayList<>();
         int page=1;
         int perPage=100;
-
+        List<SCM> sourceChangeSet=new ArrayList<>();
         // format URL
         String repoUrl = (String) repo.getOptions().get("url");
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
         String apiUrl = gitHubParsed.getApiUrl();
         // To Do check changes the url: workflowRuns
-        String queryUrl = apiUrl.concat("/actions/workflows/" + pWorkflowId + "/runs" +
-        		"?branch=" + repo.getBranch());
+        String queryUrl = apiUrl.concat("/actions/workflows/" + pWorkflowId + "/runs");
+        //+
+  //      		"?branch=" + repo.getBranch());
 //				"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
         String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
@@ -171,9 +178,34 @@ public class DefaultWorkflowClient implements WorkflowClient {
                 String runId = str(jsonObject, "id");
                 String status = str(jsonObject, "status");
                 String conclusion = str(jsonObject, "conclusion");
- 
+                String created_at= str(jsonObject, "created_at");
+                String updated_at= str(jsonObject, "updated_at");
+                String html_url = str(jsonObject, "html_url");
+                String event =  str(jsonObject, "event");
+                JSONArray pull_requests = (JSONArray) jsonObject.get("pull_requests");
+                //System.out.println("pull_requests::"+pull_requests);
+                SCM scm=new SCM();
+                for(Object prDetails : pull_requests )
+                {
+                	
+                	JSONObject commitDetails =  (JSONObject) prDetails;
+                	JSONObject headDetails =  (JSONObject)commitDetails.get("head");
+                	String branch = str(headDetails,"ref");
+                //	String commitID = str(headDetails,"sha");
+                //	scm.setScmRevisionNumber(commitID);
+                	scm.setScmBranch(branch);
+                }
+                JSONObject headCommit =  (JSONObject) jsonObject.get("head_commit");
+                JSONObject authorDetails =   (JSONObject)headCommit.get("author");
+                String commitId = str(headCommit,"id");
+                String author=  str(authorDetails,"name");
+                String message =  str(authorDetails,"message");
+                scm.setScmRevisionNumber(commitId);
+                scm.setScmAuthor(author);
+                scm.setScmCommitLog(message);
+                sourceChangeSet.add(scm);
                 WorkflowRun workflowRun = new WorkflowRun(workflowId,
-                		runId, status, conclusion);
+                		runId, status, conclusion,event,created_at,updated_at,html_url,sourceChangeSet);
                 workflowRuns.add(workflowRun);
   
             }
@@ -214,8 +246,9 @@ public class DefaultWorkflowClient implements WorkflowClient {
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
         String apiUrl = gitHubParsed.getApiUrl();
         // To Do check changes the url: workflowRuns
-        String queryUrl = apiUrl.concat("/actions/run/" + pWorkflowRunId + "/jobs" +
-        		"?branch=" + repo.getBranch());
+        String queryUrl = apiUrl.concat("/actions/runs/" + pWorkflowRunId + "/jobs");
+//        +
+//        		"?branch=" + repo.getBranch());
 //        		"?branch=" + repo.getBranch() + "&page=" + page + "&perPage=" + perPage);
         String decryptedPassword =      repo.getPassword();// Decrypting is not required decryptString(repo.getPassword(), settings.getKey());
         String personalAccessToken = (String) repo.getPersonalAccessToken();
@@ -351,7 +384,7 @@ public class DefaultWorkflowClient implements WorkflowClient {
     private ResponseEntity<String> makeRestCall(String url, String userId,
                                                 String password,String personalAccessToken) {
         // Basic Auth only.
-        if (!"".equals(userId) && !"".equals(password)) {
+        if (null!=userId && null!=password && !"".equals(userId) && !"".equals(password)) {
             return restOperations.exchange(url, HttpMethod.GET, new HttpEntity<>(createHeaders(userId, password)), String.class);
         } else if ((personalAccessToken!=null && !"".equals(personalAccessToken)) ) {
             return restOperations.exchange(url, HttpMethod.GET,new HttpEntity<>(createHeaders(personalAccessToken)),String.class);

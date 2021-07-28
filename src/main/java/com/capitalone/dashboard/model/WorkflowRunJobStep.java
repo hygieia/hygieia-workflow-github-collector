@@ -1,18 +1,16 @@
 package com.capitalone.dashboard.model;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /*Model to store a GitHub Workflow Run Job Step Data*/
 
-@Document(collection="github_workflow_run_job_step")
-public class WorkflowRunJobStep extends BaseModel{
-	@Indexed(unique = true)
+public class WorkflowRunJobStep{
+	//@Indexed(unique = true)
+	private String stepNumber;
 	private String workflowId;
 	private String runId;
 	private String jobId;
-	private String stepNumber;
 	private String status;
 	private String conclusion;
 	private String startedAt;

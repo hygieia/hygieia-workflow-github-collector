@@ -23,11 +23,11 @@ public class GitHubSettings {
 	@Value("${github.firstRunHistoryDays:14}")
     private int firstRunHistoryDays;
     private List<String> notBuiltCommits;
-	@Value("${github.errorThreshold:2}")
+	@Value("${github.errorThreshold:20}")
     private int errorThreshold;
-	@Value("${github.rateLimitThreshold:10}")
+	@Value("${github.rateLimitThreshold:1011}")
 	private int rateLimitThreshold;
-	private String personalAccessToken;
+	private String personalAccessToken; 
 
 
 	public String getHost() {

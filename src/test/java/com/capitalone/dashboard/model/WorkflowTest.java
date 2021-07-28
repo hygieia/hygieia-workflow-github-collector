@@ -12,28 +12,30 @@ public class WorkflowTest {
 	private Boolean enabled = true;
 	private String createdAt = "17/08/1956 12:01";
 	private String updatedAt = "17/08/2020 12:01";
-
+	private String repo="repo";
+	private String branch = "master";
 	private String workflowId2 = "8675310";
 	private String name2 = "wfName2";
 	private String state2 = "passive";
 	private Boolean enabled2 = false;
 	private String createdAt2 = "14/08/2020 12:01";
 	private String updatedAt2 = "14/08/2020 14:01";
-
+	private String repo2="repo";
+	private String branch2 = "main";
 	@Test
 	public void testConstructor1() {
-		Workflow wf = new Workflow(workflowId, name, state, enabled);
+		Workflow wf = new Workflow(workflowId, name, state, enabled,createdAt, updatedAt,repo,branch);
 		assertEquals(workflowId,wf.getWorkflowId());
 		assertEquals(name,wf.getName());
 		assertEquals(state,wf.getState());
 		assertEquals(enabled,wf.getEnabled());
-		assertNull(wf.getCreatedAt());
-		assertNull(wf.getUpdatedAt());
+		assertNotNull(wf.getCreatedAt());
+		assertNotNull(wf.getUpdatedAt());
 	}
 
 	@Test
 	public void testConstructor2WithSetters() {
-		Workflow wf = new Workflow(workflowId, name, state, enabled, createdAt, updatedAt);
+		Workflow wf = new Workflow(workflowId, name, state, enabled, createdAt, updatedAt,repo,branch);
 		assertEquals(workflowId,wf.getWorkflowId());
 		assertEquals(name,wf.getName());
 		assertEquals(state,wf.getState());

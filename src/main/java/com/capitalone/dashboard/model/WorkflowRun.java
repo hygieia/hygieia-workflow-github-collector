@@ -2,7 +2,6 @@ package com.capitalone.dashboard.model;
 
 import java.util.List;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,14 +10,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection="github_workflow_run")
 public class WorkflowRun extends BaseModel{
 	@Indexed(unique = true)
-	private String workflowId;
 	private String runId;
+	private String workflowId;
 	private String event;
 	private String status;
 	private String conclusion;
 	private String createdAt;
 	private String updatedAt;
-	
+	private String buildUrl;
+	private List<SCM> sourceChangeSet;
+	public WorkflowRun()
+	{
+		
+	}
 	public WorkflowRun(String workflowId, String runId, String status, String conclusion) {
 		this.workflowId = workflowId;
 		this.runId = runId;
@@ -27,7 +31,7 @@ public class WorkflowRun extends BaseModel{
 	}
 	
 	public WorkflowRun(String workflowId, String runId, String status, String conclusion,
-			String event, String createdAt, String updatedAt) {
+			String event, String createdAt, String updatedAt,String buildUrl,List<SCM> sourceChangeSet) {
 		this.workflowId = workflowId;
 		this.runId = runId;
 		this.status = status;
@@ -35,6 +39,8 @@ public class WorkflowRun extends BaseModel{
 		this.event = event;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.buildUrl = buildUrl;
+		this.sourceChangeSet = sourceChangeSet;
 	}
 
 	public String getStatus() {
@@ -91,6 +97,18 @@ public class WorkflowRun extends BaseModel{
 
 	public void setUpdatedAt(String updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+	public String getBuildUrl() {
+		return buildUrl;
+	}
+	public void setBuildUrl(String buildUrl) {
+		this.buildUrl = buildUrl;
+	}
+	public List<SCM> getSourceChangeSet() {
+		return sourceChangeSet;
+	}
+	public void setSourceChangeSet(List<SCM> sourceChangeSet) {
+		this.sourceChangeSet = sourceChangeSet;
 	}
 
 }
